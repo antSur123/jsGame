@@ -9,120 +9,134 @@ canvas.height = window.innerHeight;
 
 // draw on canvas
 const c = canvas.getContext('2d');
-const RADIUS = WIDTH = 35;
+const RADIUS = 35;
+const WIDTH = 65;
+const HEIGHT = WIDTH;
+var chosenShape;
 
 window.addEventListener('mousedown', (event) => {
-    if (circleArray.length > 1) {
-        getDistanceFromWanted(event.x, event.y);
+    if (shapeArray.length > 1) {
+        clickDetection(event.x, event.y);
     }
 });
 
-function getDistanceFromWanted(mouseX, mouseY) {
+function clickDetection(mouseX, mouseY) {
     let x = Number(mouseX);
     let y = Number(mouseY);
-    let distance = Math.sqrt(Math.abs(Math.pow(x-circleArray[0].x,2)-Math.pow(y-circleArray[0].y,2)));
-    if (distance <= 38) {
-        console.log("Found!");
-        circleArray.length = 1;
-        setTimeout(init, 3000);
+    console.log(chosenShape.type);
+    console.log("char",chosenShape.x, chosenShape.y);
+    console.log("mouse",x, y);
+    console.log(chosenShape.color);
+    
+    if (chosenShape.type == "Square") {
+        let isWithinX =  x > chosenShape.x && x < chosenShape.x + WIDTH;
+        let isWithinY = y > chosenShape.y && y < chosenShape.y + HEIGHT;
+        isWithinX && isWithinY ? foundWantedCharacter() : foundWrongCharacter();
     }
 
-    else {
-        console.log("Miss!");
+    else if (chosenShape.type == "Circle") {
+        let distance = Math.sqrt(Math.abs(Math.pow(x-chosenShape.x,2)-Math.pow(y-chosenShape.y,2)));
+        distance <= 38 ? foundWantedCharacter() : foundWrongCharacter();
     }
 }
 
-function Circle(x, y, color) {
-    this.x = x;
-    this.y = y;
-    this.dx = 0;
-    this.dy = 0;
-    this.radius = RADIUS;
-    this.color = color || shapeArray[Math.floor(Math.random() * shapeArray.length)];
+function foundWantedCharacter(){
+    console.log("Found!");
+    shapeArray.length = 1;
+    setTimeout(init, 3000);
+}
 
-    this.draw = function(){
+function foundWrongCharacter(){
+    console.log("Miss!");
+
+}
+
+class Shape {
+    constructor(x, y, color) {
+        this.x = x;
+        this.y = y;
+        this.dx = 0;
+        this.dy = 0;
+        this.type = this.constructor.name;
+        this.color = color || colorArray[Math.floor(Math.random() * colorArray.length)];
+        this.update = () => {
+            if (this.x + this.radius > canvas.width || this.x - this.radius < 0) {
+                this.dx *= -1;
+            }
+            if (this.y + this.radius > canvas.height || this.y - this.radius < 0) {
+                this.dy *= -1;
+            }
+
+            this.x += this.dx;
+            this.y += this.dy;
+
+            this.draw();
+        };
+    }
+}
+
+class Circle extends Shape {
+    constructor(x, y, color) {
+        super(x, y, color);
+    }
+
+    draw() {
         c.beginPath();
-        c.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
+        c.arc(this.x, this.y, RADIUS, 0, Math.PI * 2, false);
         c.fillStyle = this.color;
         c.fill();
         c.stroke();
     }
-
-    this.update = function(){
-        if (this.x+this.radius > canvas.width || this.x-this.radius < 0){
-            this.dx *= -1;
-        }
-        if (this.y+this.radius > canvas.height || this.y-this.radius < 0){
-            this.dy *= -1;
-        }
-
-        this.x += this.dx;
-        this.y += this.dy;
-        
-        this.draw();
-    }
 }
 
-function Square(x, y, color){
-    this.x = x;
-    this.y = y;
-    this.dx = 0;
-    this.dy = 0;
-    this.color = color || shapeArray[Math.floor(Math.random() * shapeArray.length)];
+class Square extends Shape {
+    constructor(x, y, color) {
+        super(x, y, color);
+    }
 
-    this.draw = function(){
-        c.fillRect(this.x, this.y, WIDTH);
+    draw() {
+        c.fillRect(this.x, this.y, WIDTH, HEIGHT);
+        c.strokeRect(this.x, this.y, WIDTH, HEIGHT);
         c.fillStyle = this.color;
-        c.fill();
-    }
-
-    this.update = function(){
-        if (this.x+this.radius > canvas.width || this.x-this.radius < 0){
-            this.dx *= -1;
-        }
-
-        if (this.y+this.radius > canvas.height || this.y-this.radius < 0){
-            this.dy *= -1;
-        }
-
-        this.x += this.dx;
-        this.y += this.dy;
-        this.draw();
     }
 }
 
-function init(){
-    circleArray = [];
-    shapeArray = [
+// TODO For some reason the square changes it's color when you click on it, so it's inpossible finding it without trial and error.
+function init() {
+    shapeArray = [];
+    colorArray = [
     "#3caea3",
     "#f4c095",
     "#ed553b",
     "#f6d55c"
     ]
 
-    let randomshapeArrayIndex = Math.floor(Math.random() * shapeArray.length);
-    let chosenColor = shapeArray.splice(randomshapeArrayIndex, 1);
+    let randomColorArrayIndex = Math.floor(Math.random() * colorArray.length);
+    let chosenColor = colorArray.splice(randomColorArrayIndex, 1)[0];
 
-    // circleArray.push(new (x, y, chosenColor));
-    // for (let i = 0; i < 200; i++) {
-    //     let x = Math.floor(Math.random()*(canvas.width - 2 * RADIUS + 1) + RADIUS);
-    //     let y = Math.floor(Math.random()*(canvas.height - 2 * RADIUS + 1) + RADIUS);
-    //     if (i == 0) {
-    //         circleArray.push(new Circle(x, y, chosenColor));
-    //     }
-    //     else {
-    //         circleArray.push(new Circle(x, y));
-
-    //     }
+    
+    for (let i = 0; i < 10; i++) {
+        let x = Math.floor(Math.random() * (canvas.width - 2 * RADIUS + 1) + RADIUS);
+        let y = Math.floor(Math.random() * (canvas.height - 2 * RADIUS + 1) + RADIUS);
+        let randomShape = Math.floor(Math.random() * 2);
+        if (randomShape == 0) {
+            shapeArray.push(new Circle(x, y));
+        }
+        else if (randomShape == 1) {
+            shapeArray.push(new Square(x, y));
+        } 
     }
+
+    chosenShape = shapeArray[0];
+    chosenShape.color = chosenColor;
 }
 
 function animate() {
     requestAnimationFrame(animate);
     c.clearRect(0, 0, canvas.width, canvas.height);
 
-    for (let i = 0; i < circleArray.length; i++) {
-        circleArray[i].update();
+    for (let i = 0; i < shapeArray.length; i++) {
+        shapeArray[i].update();
     }    
 }
 
