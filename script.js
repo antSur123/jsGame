@@ -9,32 +9,24 @@ canvas.height = window.innerHeight;
 
 // draw on canvas
 const c = canvas.getContext('2d');
-const RADIUS = 35;
-
-let circleArray = [];
-
-let colorArray = [
-    "#3caea3",
-    "#f4c095",
-    "#ed553b",
-    "#f6d55c"
-]
+const RADIUS = WIDTH = 35;
 
 window.addEventListener('mousedown', (event) => {
-    getDistance(event.x, event.y);
-    
+    if (circleArray.length > 1) {
+        getDistanceFromWanted(event.x, event.y);
+    }
 });
 
-function getDistance(mouseX, mouseY) {
+function getDistanceFromWanted(mouseX, mouseY) {
     let x = Number(mouseX);
     let y = Number(mouseY);
-
     let distance = Math.sqrt(Math.abs(Math.pow(x-circleArray[0].x,2)-Math.pow(y-circleArray[0].y,2)));
     if (distance <= 38) {
         console.log("Found!");
         circleArray.length = 1;
-        setTimeout(init, 3000)
+        setTimeout(init, 3000);
     }
+
     else {
         console.log("Miss!");
     }
@@ -46,13 +38,14 @@ function Circle(x, y, color) {
     this.dx = 0;
     this.dy = 0;
     this.radius = RADIUS;
-    this.color = color || colorArray[Math.floor(Math.random() * colorArray.length)];
+    this.color = color || shapeArray[Math.floor(Math.random() * shapeArray.length)];
 
     this.draw = function(){
         c.beginPath();
         c.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
         c.fillStyle = this.color;
         c.fill();
+        c.stroke();
     }
 
     this.update = function(){
@@ -62,6 +55,7 @@ function Circle(x, y, color) {
         if (this.y+this.radius > canvas.height || this.y-this.radius < 0){
             this.dy *= -1;
         }
+
         this.x += this.dx;
         this.y += this.dy;
         
@@ -69,28 +63,57 @@ function Circle(x, y, color) {
     }
 }
 
+function Square(x, y, color){
+    this.x = x;
+    this.y = y;
+    this.dx = 0;
+    this.dy = 0;
+    this.color = color || shapeArray[Math.floor(Math.random() * shapeArray.length)];
+
+    this.draw = function(){
+        c.fillRect(this.x, this.y, WIDTH);
+        c.fillStyle = this.color;
+        c.fill();
+    }
+
+    this.update = function(){
+        if (this.x+this.radius > canvas.width || this.x-this.radius < 0){
+            this.dx *= -1;
+        }
+
+        if (this.y+this.radius > canvas.height || this.y-this.radius < 0){
+            this.dy *= -1;
+        }
+
+        this.x += this.dx;
+        this.y += this.dy;
+        this.draw();
+    }
+}
+
 function init(){
     circleArray = [];
-    colorArray = [
+    shapeArray = [
     "#3caea3",
     "#f4c095",
     "#ed553b",
     "#f6d55c"
     ]
 
-    let randomColorArrayIndex = Math.floor(Math.random() * colorArray.length);
-    let chosenColor = colorArray.splice(randomColorArrayIndex, 1);
+    let randomshapeArrayIndex = Math.floor(Math.random() * shapeArray.length);
+    let chosenColor = shapeArray.splice(randomshapeArrayIndex, 1);
 
-    for (let i = 0; i < 200; i++) {
-        let x = Math.floor(Math.random()*(canvas.width - 2 * RADIUS + 1) + RADIUS);
-        let y = Math.floor(Math.random()*(canvas.height - 2 * RADIUS + 1) + RADIUS);
-        if (i == 0) {
-            circleArray.push(new Circle(x, y, chosenColor));
-        }
-        else {
-            circleArray.push(new Circle(x, y));
+    // circleArray.push(new (x, y, chosenColor));
+    // for (let i = 0; i < 200; i++) {
+    //     let x = Math.floor(Math.random()*(canvas.width - 2 * RADIUS + 1) + RADIUS);
+    //     let y = Math.floor(Math.random()*(canvas.height - 2 * RADIUS + 1) + RADIUS);
+    //     if (i == 0) {
+    //         circleArray.push(new Circle(x, y, chosenColor));
+    //     }
+    //     else {
+    //         circleArray.push(new Circle(x, y));
 
-        }
+    //     }
     }
 }
 
