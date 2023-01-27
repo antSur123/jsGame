@@ -12,7 +12,7 @@ const c = canvas.getContext('2d');
 const RADIUS = 35;
 const WIDTH = 65;
 const HEIGHT = WIDTH;
-var chosenShape;
+let chosenShape;
 
 window.addEventListener('mousedown', (event) => {
     if (shapeArray.length > 1) {
@@ -24,8 +24,8 @@ function clickDetection(mouseX, mouseY) {
     let x = Number(mouseX);
     let y = Number(mouseY);
     console.log(chosenShape.type);
-    console.log("char",chosenShape.x, chosenShape.y);
-    console.log("mouse",x, y);
+    console.log("char", chosenShape.x, chosenShape.y);
+    console.log("mouse", x, y);
     console.log(chosenShape.color);
     
     if (chosenShape.type == "Square") {
@@ -95,13 +95,12 @@ class Square extends Shape {
     }
 
     draw() {
+        c.fillStyle = this.color;
         c.fillRect(this.x, this.y, WIDTH, HEIGHT);
         c.strokeRect(this.x, this.y, WIDTH, HEIGHT);
-        c.fillStyle = this.color;
     }
 }
 
-// TODO For some reason the square changes it's color when you click on it, so it's inpossible finding it without trial and error.
 function init() {
     shapeArray = [];
     colorArray = [
@@ -109,15 +108,16 @@ function init() {
     "#f4c095",
     "#ed553b",
     "#f6d55c"
-    ]
+    ];
+
+    console.log(colorArray);
 
     let randomColorArrayIndex = Math.floor(Math.random() * colorArray.length);
     let chosenColor = colorArray.splice(randomColorArrayIndex, 1)[0];
-
     
     for (let i = 0; i < 10; i++) {
-        let x = Math.floor(Math.random() * (canvas.width - 2 * RADIUS + 1) + RADIUS);
-        let y = Math.floor(Math.random() * (canvas.height - 2 * RADIUS + 1) + RADIUS);
+        let x = Math.floor(Math.random() * (canvas.width - 2 * WIDTH + 1) + WIDTH);
+        let y = Math.floor(Math.random() * (canvas.height - 2 * WIDTH + 1) + WIDTH);
         let randomShape = Math.floor(Math.random() * 2);
         if (randomShape == 0) {
             shapeArray.push(new Circle(x, y));
@@ -125,10 +125,12 @@ function init() {
         else if (randomShape == 1) {
             shapeArray.push(new Square(x, y));
         } 
+        chosenShape = shapeArray[0];
     }
 
-    chosenShape = shapeArray[0];
+    console.log(chosenShape.color);
     chosenShape.color = chosenColor;
+    console.log(chosenShape.color);
 }
 
 function animate() {
