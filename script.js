@@ -2,20 +2,22 @@
 // Dokumentation https://docs.google.com/document/d/15m22qdkUSni4wRro1tTjpulOBNoxaa2P1uKWIwTHs8A/edit
 
 // Sets up canvases.
-const gameMapCanvas = document.getElementById("game-map");
+var gameMapCanvas = document.getElementById("game-map");
 gameMapCanvas.width = window.innerWidth * 0.9;
-gameMapCanvas.height = window.innerHeight;
-const gmc = gameMapCanvas.getContext('2d');
+gameMapCanvas.height = window.innerHeight - 1;
+var gmc = gameMapCanvas.getContext('2d');
 
-const sidePanelCanvas = document.getElementById("side-panel");
+var sidePanelCanvas = document.getElementById("side-panel");
 sidePanelCanvas.width = window.innerWidth * 0.1;
 sidePanelCanvas.height = window.innerHeight;
-const spc = sidePanelCanvas.getContext('2d');
+var spc = sidePanelCanvas.getContext('2d');
 
 // Sets up global variables.
 const RADIUS = 35;
 const WIDTH = 65;
 const HEIGHT = WIDTH;
+const BORDERWIDTH = +getComputedStyle(document.getElementById('side-panel')).borderRightWidth.slice(0, -2);
+const SIDEPANELOFFSET = BORDERWIDTH + sidePanelCanvas.width;
 let wantedCharacter;
 
 
@@ -29,20 +31,20 @@ window.addEventListener('mousedown', (event) => {
 
 // Runs foundWantedCharacter() if clicked on the wanted char, and runs foundWrongCharacter() if not.
 function clickDetection(mouseX, mouseY) {
-    let x = Number(mouseX);
-    let y = Number(mouseY);
-    console.log(wantedCharacter.type);
-    console.log("char", wantedCharacter.x, wantedCharacter.y);
-    console.log("mouse", x, y);
+    let charX = wantedCharacter.x + SIDEPANELOFFSET;
+    let charY = wantedCharacter.y;
+
+    console.log("char", charX, charY);
+    console.log("mouse", mouseX, mouseY);
 
     if (wantedCharacter.type == "Square") {
-        let isWithinX = x > wantedCharacter.x && x < wantedCharacter.x + WIDTH;
-        let isWithinY = y > wantedCharacter.y && y < wantedCharacter.y + HEIGHT;
+        let isWithinX = mouseX > charX - 1 && mouseX < charX + WIDTH + 1;
+        let isWithinY = mouseY > charY - 1 && mouseY < charY + HEIGHT + 1;
         isWithinX && isWithinY ? foundWantedCharacter() : foundWrongCharacter();
     }
 
     else if (wantedCharacter.type == "Circle") {
-        let distance = Math.sqrt(Math.abs(Math.pow(x - wantedCharacter.x, 2) - Math.pow(y - wantedCharacter.y, 2)));
+        let distance = Math.sqrt(Math.abs(Math.pow(mouseX - charX, 2) - Math.pow(mouseY - charY, 2)));
         distance <= RADIUS ? foundWantedCharacter() : foundWrongCharacter();
     }
 }
@@ -67,7 +69,7 @@ class Circle {
     constructor(x, y, color) {
         this.x = x;
         this.y = y;
-        this.dx = 0;
+        this.dx = 1;
         this.dy = 0;
         this.type = this.constructor.name;
         this.color = color || colorArray[Math.floor(Math.random() * colorArray.length)];
@@ -87,7 +89,7 @@ class Circle {
         };
 
         // Draws character on the game canvas, or on the side panel canvas.  
-        this.draw = function (canvas = gmc) {
+        this.draw = (canvas = gmc) => {
             if (canvas != gmc) {
                 canvas.beginPath();
                 canvas.arc(sidePanelCanvas.width / 2, sidePanelCanvas.height / 2, RADIUS, 0, Math.PI * 2, false);
@@ -114,7 +116,7 @@ class Square {
         this.x = x;
         this.y = y;
         this.dx = 0;
-        this.dy = 0;
+        this.dy = 1;
         this.type = this.constructor.name;
         this.color = color || colorArray[Math.floor(Math.random() * colorArray.length)];
 
@@ -135,7 +137,7 @@ class Square {
 
 
         // Draws character on the game canvas, or on the side panel canvas.  
-        this.draw = function (canvas = gmc) {
+        this.draw = (canvas = gmc) =>{
             if (canvas != gmc) {
                 canvas.fillStyle = this.color;
                 canvas.fillRect((sidePanelCanvas.width - WIDTH) / 2, (sidePanelCanvas.height - HEIGHT) / 2, WIDTH, HEIGHT);
@@ -169,7 +171,7 @@ function startNextRound() {
 
     generateCharacters(100);
 
-    // Differentiates the wanted character.
+    // Recolors the wanted character.
     wantedCharacter = characterArray[0];
     wantedCharacter.color = chosenColor;
     wantedCharacter.draw(spc);

@@ -4,7 +4,11 @@ body {
     display: flex;
     align-items: flex-start;
 }
+
 canvas {
-    border: 1px solid;
     background-color: #071e22;
+}
+
+#side-panel {
+    border-right: 2px solid black;
 }
