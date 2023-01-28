@@ -69,7 +69,7 @@ class Circle {
     constructor(x, y, color) {
         this.x = x;
         this.y = y;
-        this.dx = 1;
+        this.dx = 0;
         this.dy = 0;
         this.type = this.constructor.name;
         this.color = color || colorArray[Math.floor(Math.random() * colorArray.length)];
@@ -116,7 +116,7 @@ class Square {
         this.x = x;
         this.y = y;
         this.dx = 0;
-        this.dy = 1;
+        this.dy = 0;
         this.type = this.constructor.name;
         this.color = color || colorArray[Math.floor(Math.random() * colorArray.length)];
 
