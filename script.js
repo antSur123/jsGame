@@ -1,57 +1,66 @@
-/**
- * https://www.youtube.com/watch?v=yq2au9EfeRQ&list=PLpPnRKq7eNW3We9VdCfx9fprhqXHwTPXL&index=3
- */
+// Sets up canvases.
+const gameMapCanvas = document.getElementById("game-map");
+gameMapCanvas.width = window.innerWidth * 0.9;
+gameMapCanvas.height = window.innerHeight;
+const gmc = gameMapCanvas.getContext('2d');
 
-// canvas size setup
-const canvas = document.querySelector('canvas');
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+const sidePanelCanvas = document.getElementById("side-panel");
+sidePanelCanvas.width = window.innerWidth * 0.1;
+sidePanelCanvas.height = window.innerHeight;
+const spc = sidePanelCanvas.getContext('2d');
 
-// draw on canvas
-const c = canvas.getContext('2d');
+// Sets up global variables.
 const RADIUS = 35;
 const WIDTH = 65;
 const HEIGHT = WIDTH;
-let chosenShape;
+let wantedCharacter;
 
+
+// Checks if player clicks.
 window.addEventListener('mousedown', (event) => {
-    if (shapeArray.length > 1) {
+    if (characterArray.length > 1) {
         clickDetection(event.x, event.y);
     }
 });
 
+
+// Runs foundWantedCharacter() if clicked on the wanted char, and runs foundWrongCharacter() if not.
 function clickDetection(mouseX, mouseY) {
     let x = Number(mouseX);
     let y = Number(mouseY);
-    console.log(chosenShape.type);
-    console.log("char", chosenShape.x, chosenShape.y);
+    console.log(wantedCharacter.type);
+    console.log("char", wantedCharacter.x, wantedCharacter.y);
     console.log("mouse", x, y);
-    console.log(chosenShape.color);
-    
-    if (chosenShape.type == "Square") {
-        let isWithinX =  x > chosenShape.x && x < chosenShape.x + WIDTH;
-        let isWithinY = y > chosenShape.y && y < chosenShape.y + HEIGHT;
+
+    if (wantedCharacter.type == "Square") {
+        let isWithinX = x > wantedCharacter.x && x < wantedCharacter.x + WIDTH;
+        let isWithinY = y > wantedCharacter.y && y < wantedCharacter.y + HEIGHT;
         isWithinX && isWithinY ? foundWantedCharacter() : foundWrongCharacter();
     }
 
-    else if (chosenShape.type == "Circle") {
-        let distance = Math.sqrt(Math.abs(Math.pow(x-chosenShape.x,2)-Math.pow(y-chosenShape.y,2)));
-        distance <= 38 ? foundWantedCharacter() : foundWrongCharacter();
+    else if (wantedCharacter.type == "Circle") {
+        let distance = Math.sqrt(Math.abs(Math.pow(x - wantedCharacter.x, 2) - Math.pow(y - wantedCharacter.y, 2)));
+        distance <= RADIUS ? foundWantedCharacter() : foundWrongCharacter();
     }
 }
 
-function foundWantedCharacter(){
+
+// This wins the round and starts the next one after 3000 ticks.
+function foundWantedCharacter() {
     console.log("Found!");
-    shapeArray.length = 1;
-    setTimeout(init, 3000);
+    characterArray.length = 1;
+    setTimeout(startNextRound, 3000);
 }
 
-function foundWrongCharacter(){
+
+// This punishes the player for clicking on the wrong char.
+function foundWrongCharacter() {
     console.log("Miss!");
-
 }
 
-class Shape {
+
+// Constructor for Circles.
+class Circle {
     constructor(x, y, color) {
         this.x = x;
         this.y = y;
@@ -59,88 +68,137 @@ class Shape {
         this.dy = 0;
         this.type = this.constructor.name;
         this.color = color || colorArray[Math.floor(Math.random() * colorArray.length)];
+
+        // Updates character's animation.
         this.update = () => {
-            if (this.x + this.radius > canvas.width || this.x - this.radius < 0) {
+            if (this.x + RADIUS > gameMapCanvas.width || this.x - RADIUS < 0) {
                 this.dx *= -1;
             }
-            if (this.y + this.radius > canvas.height || this.y - this.radius < 0) {
+            if (this.y + RADIUS > gameMapCanvas.height || this.y - RADIUS < 0) {
                 this.dy *= -1;
             }
 
             this.x += this.dx;
             this.y += this.dy;
-
             this.draw();
+        };
+
+        // Draws character on the game canvas, or on the side panel canvas.  
+        this.draw = function (canvas = gmc) {
+            if (canvas != gmc) {
+                canvas.beginPath();
+                canvas.arc(sidePanelCanvas.width / 2, sidePanelCanvas.height / 2, RADIUS, 0, Math.PI * 2, false);
+                canvas.fillStyle = this.color;
+                canvas.fill();
+                canvas.stroke();
+            }
+            else {
+                canvas.beginPath();
+                canvas.arc(this.x, this.y, RADIUS, 0, Math.PI * 2, false);
+                canvas.fillStyle = this.color;
+                canvas.fill();
+                canvas.stroke();
+
+            }
         };
     }
 }
 
-class Circle extends Shape {
-    constructor(x, y, color) {
-        super(x, y, color);
-    }
 
-    draw() {
-        c.beginPath();
-        c.arc(this.x, this.y, RADIUS, 0, Math.PI * 2, false);
-        c.fillStyle = this.color;
-        c.fill();
-        c.stroke();
+// Constructor for Squares.
+class Square {
+    constructor(x, y, color) {
+        this.x = x;
+        this.y = y;
+        this.dx = 0;
+        this.dy = 0;
+        this.type = this.constructor.name;
+        this.color = color || colorArray[Math.floor(Math.random() * colorArray.length)];
+
+
+        // Updates character's animation.
+        this.update = () => {
+            if (this.x + WIDTH > gameMapCanvas.width || this.x < 0) {
+                this.dx *= -1;
+            }
+            if (this.y + WIDTH > gameMapCanvas.height || this.y < 0) {
+                this.dy *= -1;
+            }
+
+            this.x += this.dx;
+            this.y += this.dy;
+            this.draw();
+        };
+
+
+        // Draws character on the game canvas, or on the side panel canvas.  
+        this.draw = function (canvas = gmc) {
+            if (canvas != gmc) {
+                canvas.fillStyle = this.color;
+                canvas.fillRect((sidePanelCanvas.width - WIDTH) / 2, (sidePanelCanvas.height - HEIGHT) / 2, WIDTH, HEIGHT);
+                canvas.strokeRect((sidePanelCanvas.width - WIDTH) / 2, (sidePanelCanvas.height - HEIGHT) / 2, WIDTH, HEIGHT);
+            }
+            else {
+                canvas.fillStyle = this.color;
+                canvas.fillRect(this.x, this.y, WIDTH, HEIGHT);
+                canvas.strokeRect(this.x, this.y, WIDTH, HEIGHT);
+            }
+        };
     }
 }
 
-class Square extends Shape {
-    constructor(x, y, color) {
-        super(x, y, color);
-    }
 
-    draw() {
-        c.fillStyle = this.color;
-        c.fillRect(this.x, this.y, WIDTH, HEIGHT);
-        c.strokeRect(this.x, this.y, WIDTH, HEIGHT);
-    }
-}
+// Starts new game.
+function startNextRound() {
+    spc.clearRect(0, 0, gameMapCanvas.width, gameMapCanvas.height);
 
-function init() {
-    shapeArray = [];
+    characterArray = [];
     colorArray = [
-    "#3caea3",
-    "#f4c095",
-    "#ed553b",
-    "#f6d55c"
+        "#3caea3",
+        "#f4c095",
+        "#ed553b",
+        "#f6d55c"
     ];
 
-    console.log(colorArray);
-
+    // Chosess the unique color the wanted char will have, and excluted it for all other chars.
     let randomColorArrayIndex = Math.floor(Math.random() * colorArray.length);
     let chosenColor = colorArray.splice(randomColorArrayIndex, 1)[0];
-    
-    for (let i = 0; i < 10; i++) {
-        let x = Math.floor(Math.random() * (canvas.width - 2 * WIDTH + 1) + WIDTH);
-        let y = Math.floor(Math.random() * (canvas.height - 2 * WIDTH + 1) + WIDTH);
+
+    generateCharacters(100);
+
+    // Differentiates the wanted character.
+    wantedCharacter = characterArray[0];
+    wantedCharacter.color = chosenColor;
+    wantedCharacter.draw(spc);
+}
+
+
+// Generates ammount of characters.
+function generateCharacters(ammount) {
+    for (let i = 0; i < ammount; i++) {
+        let x = Math.floor(Math.random() * (gameMapCanvas.width - 2 * WIDTH) + (WIDTH / 1.5));
+        let y = Math.floor(Math.random() * (gameMapCanvas.height - 2 * WIDTH) + (WIDTH / 1.5));
         let randomShape = Math.floor(Math.random() * 2);
         if (randomShape == 0) {
-            shapeArray.push(new Circle(x, y));
+            characterArray.push(new Circle(x, y));
         }
         else if (randomShape == 1) {
-            shapeArray.push(new Square(x, y));
-        } 
-        chosenShape = shapeArray[0];
+            characterArray.push(new Square(x, y));
+        }
     }
 
-    console.log(chosenShape.color);
-    chosenShape.color = chosenColor;
-    console.log(chosenShape.color);
 }
 
-function animate() {
-    requestAnimationFrame(animate);
-    c.clearRect(0, 0, canvas.width, canvas.height);
 
-    for (let i = 0; i < shapeArray.length; i++) {
-        shapeArray[i].update();
-    }    
+// Animates next frame for all characters.
+function animationFrame() {
+    requestAnimationFrame(animationFrame);
+    gmc.clearRect(0, 0, gameMapCanvas.width, gameMapCanvas.height);
+
+    for (let i = 0; i < characterArray.length; i++) {
+        characterArray[i].update();
+    }
 }
 
-init();
-animate();
+startNextRound();
+animationFrame();
