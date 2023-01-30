@@ -134,12 +134,14 @@ class Text {
         this.color = color;
         this.canvas = canvas;
         this.shouldDisplay = false;
+        this.width = this.canvas.measureText(this.text).width;
 
 
         // Updates text's info.
         this.update = () => {
+            this.width = this.canvas.measureText(this.text).width;
+
             if (this.canvas == spc) {
-                this.width = this.canvas.measureText(this.text).width;
                 this.x = (sidePanelCanvas.width - this.width) / 2;
             }
 
@@ -178,18 +180,21 @@ function clickDetection(mouseX, mouseY) {
     if (wantedCharacter.type == "Square") {
         let isWithinX = mouseX > charX - 1 && mouseX < charX + WIDTH + 1;
         let isWithinY = mouseY > charY - 1 && mouseY < charY + HEIGHT + 1;
-        isWithinX && isWithinY ? foundWantedCharacter() : foundWrongCharacter();
+        isWithinX && isWithinY ? foundWantedCharacter(mouseX, mouseY) : foundWrongCharacter(mouseX, mouseY);
     }
 
     else if (wantedCharacter.type == "Circle") {
         let distance = Math.sqrt(Math.abs(Math.pow(mouseX - charX, 2) - Math.pow(mouseY - charY, 2)));
-        distance <= RADIUS ? foundWantedCharacter() : foundWrongCharacter();
+        console.log(distance);
+        console.log(RADIUS);
+
+        distance <= RADIUS ? foundWantedCharacter(mouseX, mouseY) : foundWrongCharacter(mouseX, mouseY);
     }
 }
 
 
-// This wins the round and starts the next one after 3000 ticks.
-function foundWantedCharacter() {
+// Wins the round and starts the next one after 3000 ticks.
+function foundWantedCharacter(mouseX, mouseY) {
     console.log("Found!");
     isWantedCharacterFound = true;
     gameMapItems.length = 1;
@@ -201,31 +206,60 @@ function foundWantedCharacter() {
         }
     }
 
-    clearTimeout(countdown)
+    // Displays recieved time bonus.
+    timeBonusText.x = mouseX - SIDEPANEL_OFFSET - timeBonusText.width / 2;
+    // TODO Make sure it shows under the thing if it's too high up
+    timeBonusText.y = mouseY - 80;
+    timeBonusText.shouldDisplay = true;
+
+    // Cleans up.
+    setTimeout( () => {
+        timeBonusText.shouldDisplay = false;
+    }, 3000);
+    
+    clearTimeout(countdown);
     timer.text = `${timeLeft}s`;
     setTimeout(startNextRound, 3000);
 }
 
 
-// This punishes the player for clicking on the wrong char.
-function foundWrongCharacter() {
+// Punishes the player for clicking on the wrong char.
+function foundWrongCharacter(mouseX, mouseY) {
     console.log("Miss!");
+    if (timeLeft > 0) {
+        timeLeft -= TIME_PENALTY;
+    }
+    
+    timer.text = `${timeLeft}s`;
+
+    // Displays recieved time bonus.
+    timePenaltyText.x = mouseX - SIDEPANEL_OFFSET - timeBonusText.width / 2;
+    // TODO Make sure it shows under the thing if it's too high up
+    timePenaltyText.y = mouseY - 10;
+    timePenaltyText.shouldDisplay = true;
+
+    // Cleans up.
+    setTimeout( () => {
+        timePenaltyText.shouldDisplay = false;
+    }, 3000);
 }
 
 
-// This counts down the timer. If it reaches 0 it ends the game.
+// Counts down the timer. If it reaches 0 it ends the game.
 function countdown() {
     console.log("timeLeft: " + timeLeft);
     if (!isWantedCharacterFound) {
-        timeLeft -= 1;
-        timer.text = `${timeLeft}s`;
+        if (timeLeft > 0) {
+            timeLeft -= 1;
+        }
+            timer.text = `${timeLeft}s`;
 
-        if (timeLeft == 0) {
+        if (timeLeft <= 0) {
             console.log("Time's up!");
             gameOver();
         }
         else if (timeLeft > 0) {
-            setTimeout(countdown, 1000)
+            setTimeout(countdown, 1000);
         }
     }
 }
@@ -262,6 +296,7 @@ function startNextRound() {
     wantedCharacter.color = chosenColor;
 
     timer.draw();
+
     setTimeout(countdown, 1000)
 }
 
@@ -293,22 +328,26 @@ function animationFrame() {
     timer.update();
     wantedCharacter.draw(spc);
 
-    // Updates game map.
-    // TODO make these actually do something.
-    timeBonusText.update();
-    timePenaltyText.update();
-
     for (let i = 0; i < gameMapItems.length; i++) {
         gameMapItems[i].update();
     }
+
+    // Updates game map.
+    timeBonusText.update();
+    timePenaltyText.update();
 }
 
 
 function gameInit() {
     timeLeft = START_TIME;  // START_TIME
     timer = new Text(0, 100, `${timeLeft}s`, 60, "red", spc);
-    timeBonusText = new Text(0, 0, TIME_BONUS, 30, "green", gmc);
-    timePenaltyText = new Text(0, 0, TIME_PENALTY, 30, "red", gmc);
+    timer.shouldDisplay = true;
+    timeBonusText = new Text(0, 0, `+${TIME_BONUS} seconds`, 30, "green", gmc);
+    timePenaltyText = new Text(0, 0, `-${TIME_PENALTY} seconds`, 30, "red", gmc);
+
+    // Updates the width of the texts.
+    timeBonusText.draw();
+    timePenaltyText.draw();
 
     startNextRound();
     animationFrame();
