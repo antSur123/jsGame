@@ -19,9 +19,14 @@ const HEIGHT = WIDTH;
 const BORDER_WIDTH = +getComputedStyle(document.getElementById('side-panel')).borderRightWidth.slice(0, -2);
 const SIDEPANEL_OFFSET = BORDER_WIDTH + sidePanelCanvas.width;
 const START_TIME = 5;
-let timeLeft;
+const TIME_BONUS = 2;
+const TIME_PENALTY = 1;
+
 let wantedCharacter;
+let timeLeft;
 let timer;
+let timeBonusText;
+let timePenaltyText;
 let isWantedCharacterFound = false;
 
 
@@ -81,8 +86,8 @@ class Square {
         this.dx = 0;
         this.dy = 0;
         this.type = this.constructor.name;
-        this.color = color || colorArray[Math.floor(Math.random() * colorArray.length)];
         this.canvas = gmc || canvas;
+        this.color = color || colorArray[Math.floor(Math.random() * colorArray.length)];
 
 
         // Updates character's animation.
@@ -121,23 +126,34 @@ class Square {
 
 // Constructor for text.
 class Text {
-    constructor(y, text, fontSize) {
+    constructor(x, y, text, fontSize, color, canvas) {
+        this.x = x;
+        this.y = y;
         this.text = text;
         this.fontSize = fontSize;
-        this.y = y;
+        this.color = color;
+        this.canvas = canvas;
+        this.shouldDisplay = false;
+
 
         // Updates text's info.
         this.update = () => {
-            this.width = spc.measureText(this.text).width;
-            this.x = (sidePanelCanvas.width - this.width ) / 2;
-            this.draw();
+            if (this.canvas == spc) {
+                this.width = this.canvas.measureText(this.text).width;
+                this.x = (sidePanelCanvas.width - this.width) / 2;
+            }
+
+            if (this.shouldDisplay) {
+                this.draw();
+            }
         };
+
 
         // Draws text.
         this.draw = () => {
-            spc.fillStyle = "red";
-            spc.font = `${this.fontSize}px Arial`;
-            spc.fillText(this.text, this.x, this.y);
+            this.canvas.fillStyle = this.color;
+            this.canvas.font = `${this.fontSize}px Arial`;
+            this.canvas.fillText(this.text, this.x, this.y);
         };
     }
 }
@@ -177,11 +193,14 @@ function foundWantedCharacter() {
     console.log("Found!");
     isWantedCharacterFound = true;
     gameMapItems.length = 1;
-    for (let i = 0 ; i < 2; i++) {
+
+    // Adds 2 second, only up to fifty.
+    for (let i = 0; i < TIME_BONUS; i++) {
         if (timeLeft <= 49) {
             timeLeft += 1;
         }
     }
+
     clearTimeout(countdown)
     timer.text = `${timeLeft}s`;
     setTimeout(startNextRound, 3000);
@@ -198,16 +217,16 @@ function foundWrongCharacter() {
 function countdown() {
     console.log("timeLeft: " + timeLeft);
     if (!isWantedCharacterFound) {
-	    timeLeft -= 1;
-	    timer.text = `${timeLeft}s`;
-	
-	    if (timeLeft == 0) {
-	        console.log("Time's up!");
-	        gameOver();
-	    }
-	    else if (timeLeft > 0) {
-	        setTimeout(countdown, 1000)
-	    }
+        timeLeft -= 1;
+        timer.text = `${timeLeft}s`;
+
+        if (timeLeft == 0) {
+            console.log("Time's up!");
+            gameOver();
+        }
+        else if (timeLeft > 0) {
+            setTimeout(countdown, 1000)
+        }
     }
 }
 
@@ -224,7 +243,7 @@ function startNextRound() {
     isWantedCharacterFound = false;
 
     gameMapItems = [];
-    sidePanelItems = []; 
+    sidePanelItems = [];
     colorArray = [
         "#3caea3",
         "#f4c095",
@@ -241,7 +260,7 @@ function startNextRound() {
     // Recolors the wanted character.
     wantedCharacter = gameMapItems[0];
     wantedCharacter.color = chosenColor;
-    
+
     timer.draw();
     setTimeout(countdown, 1000)
 }
@@ -269,21 +288,31 @@ function animationFrame() {
     requestAnimationFrame(animationFrame);
     gmc.clearRect(0, 0, gameMapCanvas.width, gameMapCanvas.height);
     spc.clearRect(0, 0, gameMapCanvas.width, gameMapCanvas.height);
-    
+
+    // Updates side panel.
     timer.update();
     wantedCharacter.draw(spc);
+
+    // Updates game map.
+    // TODO make these actually do something.
+    timeBonusText.update();
+    timePenaltyText.update();
 
     for (let i = 0; i < gameMapItems.length; i++) {
         gameMapItems[i].update();
     }
 }
 
+
 function gameInit() {
     timeLeft = START_TIME;  // START_TIME
-    timer = new Text(100, `${timeLeft}s`, 60);
+    timer = new Text(0, 100, `${timeLeft}s`, 60, "red", spc);
+    timeBonusText = new Text(0, 0, TIME_BONUS, 30, "green", gmc);
+    timePenaltyText = new Text(0, 0, TIME_PENALTY, 30, "red", gmc);
 
     startNextRound();
     animationFrame();
 }
+
 
 gameInit();
