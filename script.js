@@ -26,7 +26,8 @@ let wantedCharacter;
 let timeLeft;
 let timer;
 let timeBonusText;
-let timePenaltyText;
+let gameMapItems = [];
+let timePenaltyTextArray = [];
 let isWantedCharacterFound = false;
 
 
@@ -38,8 +39,8 @@ class Circle {
         this.dx = 0;
         this.dy = 0;
         this.type = this.constructor.name;
-        this.color = color || colorArray[Math.floor(Math.random() * colorArray.length)];
-        this.canvas = gmc || canvas;
+        this.color = color;
+        this.canvas = canvas;
 
 
         // Updates character's animation.
@@ -71,7 +72,6 @@ class Circle {
                 canvas.fillStyle = this.color;
                 canvas.fill();
                 canvas.stroke();
-
             }
         };
     }
@@ -86,8 +86,8 @@ class Square {
         this.dx = 0;
         this.dy = 0;
         this.type = this.constructor.name;
-        this.canvas = gmc || canvas;
-        this.color = color || colorArray[Math.floor(Math.random() * colorArray.length)];
+        this.color = color;
+        this.canvas = canvas;
 
 
         // Updates character's animation.
@@ -180,21 +180,18 @@ function clickDetection(mouseX, mouseY) {
     if (wantedCharacter.type == "Square") {
         let isWithinX = mouseX > charX - 1 && mouseX < charX + WIDTH + 1;
         let isWithinY = mouseY > charY - 1 && mouseY < charY + HEIGHT + 1;
-        isWithinX && isWithinY ? foundWantedCharacter(mouseX, mouseY) : foundWrongCharacter(mouseX, mouseY);
+        isWithinX && isWithinY ? foundWantedCharacter() : foundWrongCharacter(mouseX, mouseY);
     }
 
     else if (wantedCharacter.type == "Circle") {
-        let distance = Math.sqrt(Math.abs(Math.pow(mouseX - charX, 2) - Math.pow(mouseY - charY, 2)));
-        console.log(distance);
-        console.log(RADIUS);
-
-        distance <= RADIUS ? foundWantedCharacter(mouseX, mouseY) : foundWrongCharacter(mouseX, mouseY);
+        let clickDistance = Math.sqrt(Math.abs(Math.pow(mouseX - charX, 2) - Math.pow(mouseY - charY, 2)));
+        clickDistance <= RADIUS ? foundWantedCharacter() : foundWrongCharacter(mouseX, mouseY);
     }
 }
 
 
 // Wins the round and starts the next one after 3000 ticks.
-function foundWantedCharacter(mouseX, mouseY) {
+function foundWantedCharacter() {
     console.log("Found!");
     isWantedCharacterFound = true;
     gameMapItems.length = 1;
@@ -207,9 +204,20 @@ function foundWantedCharacter(mouseX, mouseY) {
     }
 
     // Displays recieved time bonus.
-    timeBonusText.x = mouseX - SIDEPANEL_OFFSET - timeBonusText.width / 2;
-    // TODO Make sure it shows under the thing if it's too high up
-    timeBonusText.y = mouseY - 80;
+    if (wantedCharacter.type == "Square"){
+        timeBonusText.x = wantedCharacter.x - timeBonusText.width / 3;
+        timeBonusText.y = wantedCharacter.y - 20;
+    }
+    else if (wantedCharacter.type == "Circle") {
+        timeBonusText.x = wantedCharacter.x - timeBonusText.width / 2;
+        timeBonusText.y = wantedCharacter.y - RADIUS - 20;
+    }
+
+    if (timeBonusText.y < 30) { 
+        timeBonusText.y += 2 * HEIGHT;
+    }
+    
+    // TODO Make sure it shows to the side if too close to the walls, or above them.
     timeBonusText.shouldDisplay = true;
 
     // Cleans up.
@@ -226,6 +234,11 @@ function foundWantedCharacter(mouseX, mouseY) {
 // Punishes the player for clicking on the wrong char.
 function foundWrongCharacter(mouseX, mouseY) {
     console.log("Miss!");
+
+    let timePenaltyText = new Text(0, 0, `-${TIME_PENALTY} seconds`, 30, "red", gmc);
+    timePenaltyTextArray.push(timePenaltyText);
+    console.log(timePenaltyTextArray);
+
     if (timeLeft > 0) {
         timeLeft -= TIME_PENALTY;
     }
@@ -234,14 +247,19 @@ function foundWrongCharacter(mouseX, mouseY) {
 
     // Displays recieved time bonus.
     timePenaltyText.x = mouseX - SIDEPANEL_OFFSET - timeBonusText.width / 2;
-    // TODO Make sure it shows under the thing if it's too high up
+    // TODO Make sure it shows under the thing if it's too high up.
     timePenaltyText.y = mouseY - 10;
     timePenaltyText.shouldDisplay = true;
 
+    if (timePenaltyText.y < 30) { 
+        timePenaltyText.y += 40;
+    }
+
     // Cleans up.
     setTimeout( () => {
-        timePenaltyText.shouldDisplay = false;
-    }, 3000);
+        timePenaltyText = null;
+        timePenaltyTextArray.shift();
+    }, 1000);
 }
 
 
@@ -276,9 +294,9 @@ function gameOver() {
 function startNextRound() {
     isWantedCharacterFound = false;
 
+    timePenaltyTextArray = [];
     gameMapItems = [];
-    sidePanelItems = [];
-    colorArray = [
+    let colorArray = [
         "#3caea3",
         "#f4c095",
         "#ed553b",
@@ -289,30 +307,30 @@ function startNextRound() {
     let randomColorArrayIndex = Math.floor(Math.random() * colorArray.length);
     let chosenColor = colorArray.splice(randomColorArrayIndex, 1)[0];
 
-    generateCharacters(100);
+    generateCharacters(100, colorArray);
 
     // Recolors the wanted character.
     wantedCharacter = gameMapItems[0];
     wantedCharacter.color = chosenColor;
 
     timer.draw();
-
     setTimeout(countdown, 1000)
 }
 
 
 // Generates ammount of characters.
-function generateCharacters(ammount) {
+function generateCharacters(ammount, colors) {
     for (let i = 0; i < ammount; i++) {
         let x = Math.floor(Math.random() * (gameMapCanvas.width - 2 * WIDTH) + (WIDTH / 1.5));
         let y = Math.floor(Math.random() * (gameMapCanvas.height - 2 * HEIGHT) + (HEIGHT / 1.5));
+        let color = colors[Math.floor(Math.random() * colors.length)]
         let randomShape = Math.floor(Math.random() * 2);
 
         if (randomShape == 0) {
-            gameMapItems.push(new Circle(x, y, gmc));
+            gameMapItems.push(new Circle(x, y, gmc, color));
         }
         else if (randomShape == 1) {
-            gameMapItems.push(new Square(x, y, gmc));
+            gameMapItems.push(new Square(x, y, gmc, color));
         }
     }
 }
@@ -328,13 +346,16 @@ function animationFrame() {
     timer.update();
     wantedCharacter.draw(spc);
 
+    // Updates game map.
     for (let i = 0; i < gameMapItems.length; i++) {
         gameMapItems[i].update();
     }
 
-    // Updates game map.
+    for (let i = 0; i < timePenaltyTextArray.length; i++) {
+        timePenaltyTextArray[i].update();
+    }
+
     timeBonusText.update();
-    timePenaltyText.update();
 }
 
 
@@ -343,11 +364,9 @@ function gameInit() {
     timer = new Text(0, 100, `${timeLeft}s`, 60, "red", spc);
     timer.shouldDisplay = true;
     timeBonusText = new Text(0, 0, `+${TIME_BONUS} seconds`, 30, "green", gmc);
-    timePenaltyText = new Text(0, 0, `-${TIME_PENALTY} seconds`, 30, "red", gmc);
 
     // Updates the width of the texts.
     timeBonusText.draw();
-    timePenaltyText.draw();
 
     startNextRound();
     animationFrame();
