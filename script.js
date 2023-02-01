@@ -169,8 +169,10 @@ window.addEventListener('mousedown', (event) => {
 });
 
 
-// Runs foundWantedCharacter() if clicked on the wanted char, and runs foundWrongCharacter() if not.
+// Runs foundWantedCharacter() if clicked on the wanted char, and runs foundWrongCharacter() if not. Only works within the gmc.
 function clickDetection(mouseX, mouseY) {
+    if (mouseX > SIDEPANEL_OFFSET) {
+        
     let charX = wantedCharacter.x + SIDEPANEL_OFFSET;
     let charY = wantedCharacter.y;
 
@@ -186,6 +188,8 @@ function clickDetection(mouseX, mouseY) {
     else if (wantedCharacter.type == "Circle") {
         let clickDistance = Math.sqrt(Math.abs(Math.pow(mouseX - charX, 2) - Math.pow(mouseY - charY, 2)));
         clickDistance <= RADIUS ? foundWantedCharacter() : foundWrongCharacter(mouseX, mouseY);
+    }
+
     }
 }
 
