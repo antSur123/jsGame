@@ -251,7 +251,6 @@ function foundWrongCharacter(mouseX, mouseY) {
 
     // Displays recieved time bonus.
     timePenaltyText.x = mouseX - SIDEPANEL_OFFSET - timeBonusText.width / 2;
-    // TODO Make sure it shows under the thing if it's too high up.
     timePenaltyText.y = mouseY - 10;
     timePenaltyText.shouldDisplay = true;
 
@@ -280,6 +279,7 @@ function countdown() {
             console.log("Time's up!");
             gameOver();
         }
+
         else if (timeLeft > 0) {
             setTimeout(countdown, 1000);
         }
@@ -291,6 +291,9 @@ function countdown() {
 function gameOver() {
     console.log("Game Over!");
     gameMapItems.length = 1;
+    setTimeout( () => {
+        openMenu("gameOver");
+    }, 3000);
 }
 
 
@@ -311,7 +314,7 @@ function startNextRound() {
     let randomColorArrayIndex = Math.floor(Math.random() * colorArray.length);
     let chosenColor = colorArray.splice(randomColorArrayIndex, 1)[0];
 
-    generateCharacters(100, colorArray);
+    generateCharacters(250, colorArray);
 
     // Recolors the wanted character.
     wantedCharacter = gameMapItems[0];
@@ -364,6 +367,9 @@ function animationFrame() {
 
 
 function gameInit() {
+    // Hides menu
+    document.getElementById('menu').style.display = "none";
+
     timeLeft = START_TIME;  // START_TIME
     timer = new Text(0, 100, `${timeLeft}s`, 60, "red", spc);
     timer.shouldDisplay = true;
@@ -377,4 +383,33 @@ function gameInit() {
 }
 
 
-gameInit();
+function openMenu(menuType) {
+    document.getElementById('menu').style.display = "flex";
+    document.getElementById('main-menu').style.display = "none";
+    document.getElementById('game-over-menu').style.display = "none";
+    document.getElementById('options-menu').style.display = "none";
+    document.getElementById('instructions-menu').style.display = "none";
+    document.getElementById('title').style.marginBottom = "0px";
+
+    switch(menuType) {
+        case "main":
+            document.getElementById('main-menu').style.display = "flex";
+            document.getElementById('title').style.marginBottom = "50px";
+            break;
+            
+        case "gameOver":
+            document.getElementById('game-over-menu').style.display = "flex";         
+            break;
+
+        case "options":
+            document.getElementById('options-menu').style.display = "flex";
+            break;
+
+        case "instructions":
+            document.getElementById('instructions-menu').style.display = "flex";
+            document.getElementById('instructions-message').style.marginBottom = "0px";
+            break;
+    }
+}
+
+openMenu("main");

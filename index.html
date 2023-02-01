@@ -1,14 +1,74 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <title>Character Wanted</title>
-    <link rel="icon" type="image/x-icon" href="favicon.ico">
-    <link href="style.css" rel="stylesheet">
+	<meta charset="UTF-8">
+	<title>Character: Wanted!</title>
+	<link rel="icon" type="image/x-icon" href="favicon.ico">
+	<link href="style.css" rel="stylesheet">
 </head>
+
 <body>
-    <canvas id="side-panel"></canvas>
-    <canvas id="game-map"></canvas>
-    <script src="script.js"></script>
+	
+	<!-- Menus -->
+	<div id="menu-container">
+		<div id="menu">
+			<h1 id="title">Character: Wanted!</h1>
+
+			<!-- Main menu -->
+			<div class="sub-menu" id="main-menu">
+				<div id="button-container">
+					<a class="button" onclick="openMenu('options')">Options</a>
+					<a class="button" onclick="gameInit()">Start</a>
+					<a class="button" onclick="openMenu('instructions')">Instructions</a>
+				</div>
+			</div>
+
+			<!-- Game over menu -->
+			<div class="sub-menu" id="game-over-menu">
+				<h2 class="message">Game Over</h2>
+
+				<div id="button-container">
+					<a class="button" onclick="openMenu('main')">Main menu</a>
+					<a class="button" onclick="">Save score</a>
+				</div>
+			</div>
+
+			<!-- Options menu -->
+			<div class="sub-menu" id="options-menu">
+				<h2 class="message">Options</h2>
+
+				<div id="button-container">
+					<a class="button" onclick="openMenu('main')">Main menu</a>
+				</div>
+			</div>
+
+			<!-- Instructions menu -->
+			<div class="sub-menu" id="instructions-menu">
+				<h2 class="message" id="instructions-message">Instructions</h2>
+				<ul id="instructions">
+					<li>Your goal is to find as many Wanted Characters as possible before the time runs out.</li>
+					<li>You can see your time left on the left side of your screen.</li>
+					<li>The current Wanted Character will be displayed on the left side of your screen, <br>underneath your time left.</li>
+					<li>Every Wanted Character you find will get an additional two seconds to the time left<br> and one point to your score.</li>
+					<li>Every time you click without it being on the Wanted Character, you will lose one second.</li>
+					<li>When the time runs out, the game will end.</li>
+				</ul>
+
+				<div id="button-container">
+					<a class="button" onclick="openMenu('main')">Main menu</a>
+				</div>
+			</div>
+
+		</div>
+	</div>
+
+	<!-- Game canvases -->
+	<div id="game">
+		<canvas id="side-panel"></canvas>
+		<canvas id="game-map"></canvas>
+	</div>
+	<script src="script.js"></script>
 </body>
+
 </html>
