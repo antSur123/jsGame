@@ -199,6 +199,8 @@ function clickDetection(mouseX, mouseY) {
 // Wins the round and starts the next one after 3000 ticks.
 function foundWantedCharacter() {
     console.log("Found!");
+    console.log("+2 sec");
+
     isWantedCharacterFound = true;
     gameMapItems.length = 1;
 
@@ -223,10 +225,13 @@ function foundWantedCharacter() {
     }
 
     if (timeBonusText.y < 30) { 
-        timeBonusText.y += 2 * HEIGHT;
+        timeBonusText.y = 40;
     }
-    
-    // TODO Make sure it shows to the side if too close to the walls, or above them.
+
+    if (timeBonusText.x < 10) { 
+        timeBonusText.x = 15;
+    }
+
     timeBonusText.shouldDisplay = true;
 
     // Cleans up.
@@ -242,12 +247,11 @@ function foundWantedCharacter() {
 
 // Punishes the player for clicking on the wrong char.
 function foundWrongCharacter(mouseX, mouseY) {
-    console.log(score);
     console.log("Miss!");
+    console.log("-1 sec");
 
     let timePenaltyText = new Text(0, 0, `-${TIME_PENALTY} seconds`, 30, "red", gmc);
     timePenaltyTextArray.push(timePenaltyText);
-    console.log(timePenaltyTextArray);
 
     if (timeLeft > 0) {
         timeLeft -= TIME_PENALTY;
@@ -262,8 +266,13 @@ function foundWrongCharacter(mouseX, mouseY) {
     timePenaltyText.shouldDisplay = true;
 
     if (timePenaltyText.y < 30) { 
-        timePenaltyText.y += 40;
+        timePenaltyText.y = 40;
     }
+
+    if (timePenaltyText.x < 10) { 
+        timePenaltyText.x = 15;
+    }
+    console.log(timePenaltyText.x);
 
     // Cleans up.
     setTimeout( () => {
