@@ -26,6 +26,7 @@ let wantedCharacter;
 let timeLeft;
 let timer;
 let timeBonusText;
+let score;
 let gameMapItems = [];
 let timePenaltyTextArray = [];
 let isWantedCharacterFound = false;
@@ -74,6 +75,7 @@ class Circle {
                 canvas.stroke();
             }
         };
+
     }
 }
 
@@ -200,10 +202,13 @@ function foundWantedCharacter() {
     isWantedCharacterFound = true;
     gameMapItems.length = 1;
 
+    ++score;
+    scoreText.text = `${score}`;
+
     // Adds 2 second, only up to fifty.
     for (let i = 0; i < TIME_BONUS; i++) {
         if (timeLeft <= 49) {
-            timeLeft += 1;
+            ++timeLeft;
         }
     }
 
@@ -237,6 +242,7 @@ function foundWantedCharacter() {
 
 // Punishes the player for clicking on the wrong char.
 function foundWrongCharacter(mouseX, mouseY) {
+    console.log(score);
     console.log("Miss!");
 
     let timePenaltyText = new Text(0, 0, `-${TIME_PENALTY} seconds`, 30, "red", gmc);
@@ -248,6 +254,7 @@ function foundWrongCharacter(mouseX, mouseY) {
     }
     
     timer.text = `${timeLeft}s`;
+    
 
     // Displays recieved time bonus.
     timePenaltyText.x = mouseX - SIDEPANEL_OFFSET - timeBonusText.width / 2;
@@ -271,7 +278,7 @@ function countdown() {
     console.log("timeLeft: " + timeLeft);
     if (!isWantedCharacterFound) {
         if (timeLeft > 0) {
-            timeLeft -= 1;
+            --timeLeft;
         }
             timer.text = `${timeLeft}s`;
 
@@ -314,13 +321,14 @@ function startNextRound() {
     let randomColorArrayIndex = Math.floor(Math.random() * colorArray.length);
     let chosenColor = colorArray.splice(randomColorArrayIndex, 1)[0];
 
-    generateCharacters(250, colorArray);
+    generateCharacters(50, colorArray);
 
     // Recolors the wanted character.
     wantedCharacter = gameMapItems[0];
     wantedCharacter.color = chosenColor;
 
     timer.draw();
+    scoreText.draw();
     setTimeout(countdown, 1000)
 }
 
@@ -351,6 +359,7 @@ function animationFrame() {
 
     // Updates side panel.
     timer.update();
+    scoreText.update();
     wantedCharacter.draw(spc);
 
     // Updates game map.
@@ -371,12 +380,16 @@ function gameInit() {
     document.getElementById('menu').style.display = "none";
 
     timeLeft = START_TIME;  // START_TIME
+    score = 0;
     timer = new Text(0, 100, `${timeLeft}s`, 60, "red", spc);
-    timer.shouldDisplay = true;
     timeBonusText = new Text(0, 0, `+${TIME_BONUS} seconds`, 30, "green", gmc);
+    scoreText = new Text(0, sidePanelCanvas.height - 50, `${score}`, 50, "white", spc);
+    timer.shouldDisplay = true;
+    scoreText.shouldDisplay = true;
 
     // Updates the width of the texts.
     timeBonusText.draw();
+    
 
     startNextRound();
     animationFrame();
