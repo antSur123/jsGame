@@ -43,7 +43,7 @@ body {
 
 li {
     margin: 10px 0;
-  }
+}
   
 ul #instructions {
     font-size: 20px;
@@ -81,7 +81,6 @@ ul #instructions {
 	position:relative;
 	top:1px;
 }
-
 
 #game {
     display: flex;

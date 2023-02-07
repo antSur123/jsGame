@@ -21,6 +21,13 @@ const SIDEPANEL_OFFSET = BORDER_WIDTH + sidePanelCanvas.width;
 const START_TIME = 5;
 const TIME_BONUS = 2;
 const TIME_PENALTY = 1;
+const MOVE_PATTERNS = [
+	"Horizontal",
+	"None",
+	"Random",
+	"Vertical",
+	"Zigzag"
+];
 
 let wantedCharacter;
 let timeLeft;
@@ -34,11 +41,11 @@ let isWantedCharacterFound = false;
 
 // Constructor for Circles.
 class Circle {
-	constructor(x, y, canvas, color) {
+	constructor(x, y, dx, dy, canvas, color) {
 		this.x = x;
 		this.y = y;
-		this.dx = 0;
-		this.dy = 0;
+		this.dx = dx;
+		this.dy = dy;
 		this.type = this.constructor.name;
 		this.color = color;
 		this.canvas = canvas;
@@ -82,11 +89,11 @@ class Circle {
 
 // Constructor for Squares.
 class Square {
-	constructor(x, y, canvas, color) {
+	constructor(x, y, dx, dy, canvas, color) {
 		this.x = x;
 		this.y = y;
-		this.dx = 0;
-		this.dy = 0;
+		this.dx = dx;
+		this.dy = dy;
 		this.type = this.constructor.name;
 		this.color = color;
 		this.canvas = canvas;
@@ -174,24 +181,21 @@ window.addEventListener('mousedown', (event) => {
 // Runs foundWantedCharacter() if clicked on the wanted char, and runs foundWrongCharacter() if not. Only works within the gmc.
 function clickDetection(mouseX, mouseY) {
 	if (mouseX > SIDEPANEL_OFFSET) {
-
 		let charX = wantedCharacter.x + SIDEPANEL_OFFSET;
 		let charY = wantedCharacter.y;
 
-		console.log("char", charX, charY);
-		console.log("mouse", mouseX, mouseY);
+		// console.log("char", charX, charY);
+		// console.log("mouse", mouseX, mouseY);
 
 		if (wantedCharacter.type == "Square") {
 			let isWithinX = mouseX > charX - 1 && mouseX < charX + WIDTH + 1;
 			let isWithinY = mouseY > charY - 1 && mouseY < charY + HEIGHT + 1;
 			isWithinX && isWithinY ? foundWantedCharacter() : foundWrongCharacter(mouseX, mouseY);
 		}
-
 		else if (wantedCharacter.type == "Circle") {
 			let clickDistance = Math.sqrt(Math.abs(Math.pow(mouseX - charX, 2) - Math.pow(mouseY - charY, 2)));
 			clickDistance <= RADIUS ? foundWantedCharacter() : foundWrongCharacter(mouseX, mouseY);
 		}
-
 	}
 }
 
@@ -203,6 +207,8 @@ function foundWantedCharacter() {
 
 	isWantedCharacterFound = true;
 	gameMapItems.length = 1;
+	wantedCharacter.dx = 0;
+	wantedCharacter.dy = 0;
 
 	++score;
 	scoreText.text = `${score}`;
@@ -230,11 +236,9 @@ function foundWantedCharacter() {
 	if (timeBonusText.y < 30) {
 		timeBonusText.y = 40;
 	}
-
 	if (timeBonusText.x + SIDEPANEL_OFFSET < timeBonusText.width / 2) {
 		timeBonusText.x = timeBonusText.width / 2 - SIDEPANEL_OFFSET + 10;
 	}
-
 	if (timeBonusText.x > gameMapCanvas.width - timeBonusText.width) {
 		timeBonusText.x = gameMapCanvas.width - timeBonusText.width - 10;
 	}
@@ -273,11 +277,9 @@ function foundWrongCharacter(mouseX, mouseY) {
 	if (timePenaltyText.y < 30) {
 		timePenaltyText.y = 40;
 	}
-
 	if (timePenaltyText.x + SIDEPANEL_OFFSET < timePenaltyText.width / 2) {
 		timePenaltyText.x = timePenaltyText.width / 2 - SIDEPANEL_OFFSET + 10;
 	}
-
 	if (timePenaltyText.x > gameMapCanvas.width - timePenaltyText.width) {
 		timePenaltyText.x = gameMapCanvas.width - timePenaltyText.width - 10;
 	}
@@ -323,6 +325,7 @@ function gameOver() {
 
 // Starts new round.
 function startNextRound() {
+	// TODO Make a character multiplyer. char_ammount = base_chars + 10*score
 	isWantedCharacterFound = false;
 
 	timePenaltyTextArray = [];
@@ -337,8 +340,10 @@ function startNextRound() {
 	// Chosess the unique color the wanted char will have, and excluted it for all other chars.
 	let randomColorArrayIndex = Math.floor(Math.random() * colorArray.length);
 	let chosenColor = colorArray.splice(randomColorArrayIndex, 1)[0];
+	let chosenMovePattern = MOVE_PATTERNS[Math.floor(Math.random() * MOVE_PATTERNS.length)];
 
-	generateCharacters(50, colorArray);
+	console.log(chosenMovePattern);
+	generateCharacters(50, colorArray, chosenMovePattern);
 
 	// Recolors the wanted character.
 	wantedCharacter = gameMapItems[0];
@@ -351,18 +356,38 @@ function startNextRound() {
 
 
 // Generates ammount of characters.
-function generateCharacters(ammount, colors) {
+function generateCharacters(ammount, colors, movePattern) {
+	let dx = 0;
+	let dy = 0;
+
+	switch (movePattern) {
+		case "Horizontal":
+			dx = Math.random() < 0.5 ? -1 : 1;
+			break;
+		case "Vertical":
+			dy = Math.random() < 0.5 ? -1 : 1;
+			break;
+		case "Zigzag":
+			dx = 0;
+			dy = 0;
+			break;
+	}
+
 	for (let i = 0; i < ammount; i++) {
+		if (movePattern == "Random") {
+			dx = Math.random() < 0.5 ? -1 : 1;
+			dy = Math.random() < 0.5 ? -1 : 1;
+		}
 		let x = Math.floor(Math.random() * (gameMapCanvas.width - 2 * WIDTH) + (WIDTH / 1.5));
 		let y = Math.floor(Math.random() * (gameMapCanvas.height - 2 * HEIGHT) + (HEIGHT / 1.5));
-		let color = colors[Math.floor(Math.random() * colors.length)]
+		let color = colors[Math.floor(Math.random() * colors.length)];
 		let randomShape = Math.floor(Math.random() * 2);
 
 		if (randomShape == 0) {
-			gameMapItems.push(new Circle(x, y, gmc, color));
+			gameMapItems.push(new Circle(x, y, dx, dy, gmc, color));
 		}
 		else if (randomShape == 1) {
-			gameMapItems.push(new Square(x, y, gmc, color));
+			gameMapItems.push(new Square(x, y, dx, dy, gmc, color));
 		}
 	}
 }
@@ -383,7 +408,6 @@ function animationFrame() {
 	for (let i = 0; i < gameMapItems.length; i++) {
 		gameMapItems[i].update();
 	}
-
 	for (let i = 0; i < timePenaltyTextArray.length; i++) {
 		timePenaltyTextArray[i].update();
 	}
