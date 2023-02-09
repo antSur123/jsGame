@@ -15,11 +15,11 @@ const WIDTH = 65;
 const HEIGHT = WIDTH;
 const START_CHARACTERS = 50;
 const CHARACTER_MULTIPLIER = 10;
-const START_TIME = 5;
-const TIME_BONUS = 3;
-const TIME_PENALTY = 1;
-const NEXT_ROUND_START_DELAY = 2000;
-const BORDER_WIDTH = +getComputedStyle(document.getElementById('side-panel')).borderRightWidth.slice(0, -2);
+const START_TIME_SEC = 5;
+const TIME_BONUS_SEC = 3;
+const TIME_PENALTY_SEC = 1;
+const NEXT_ROUND_START_DELAY_MS = 2000;
+const BORDER_WIDTH = 2;
 const SIDEPANEL_OFFSET = BORDER_WIDTH + sidePanelCanvas.width;
 const MOVE_PATTERNS = [
 	"Horizontal",
@@ -198,7 +198,7 @@ function clickDetection(mouseX, mouseY) {
 
 // Wins the round and starts the next one after 3000 ticks.
 function foundWantedCharacter() {
-	console.log(`Found! + ${TIME_BONUS} sec`);
+	console.log(`Found! + ${TIME_BONUS_SEC} sec`);
 
 	isWantedCharacterFound = true;
 	gameMapItems.length = 1;
@@ -209,7 +209,7 @@ function foundWantedCharacter() {
 	scoreText.text = `${score}`;
 
 	// Adds 2 second, only up to fifty.
-	for (let i = 0; i < TIME_BONUS; i++) {
+	for (let i = 0; i < TIME_BONUS_SEC; i++) {
 		if (timeLeft <= 49) {
 			++timeLeft;
 		}
@@ -241,10 +241,10 @@ function foundWantedCharacter() {
 	// Cleans up.
 	setTimeout(() => {
 		timeBonusText.shouldDisplay = false;
-	}, NEXT_ROUND_START_DELAY);
+	}, NEXT_ROUND_START_DELAY_MS);
 
 	clearTimeout(countdown);
-	setTimeout(startNextRound, NEXT_ROUND_START_DELAY);
+	setTimeout(startNextRound, NEXT_ROUND_START_DELAY_MS);
 }
 
 
@@ -252,12 +252,12 @@ function foundWantedCharacter() {
 function foundWrongCharacter(mouseX, mouseY) {
 	console.log("Miss! -1 sec");
 
-	let timePenaltyText = new Text(0, 0, `-${TIME_PENALTY} seconds`, 30, "red", gmc);
+	let timePenaltyText = new Text(0, 0, `-${TIME_PENALTY_SEC} seconds`, 30, "red", gmc);
 	timePenaltyTextArray.push(timePenaltyText);
 
 	// Updates time.
 	if (timeLeft > 0) {
-		timeLeft -= TIME_PENALTY;
+		timeLeft -= TIME_PENALTY_SEC;
 	}
 
 	timer.text = `${timeLeft}s`;
@@ -305,7 +305,7 @@ function countdown() {
 	}
 }
 
-
+// Ends game and opens menu after 3 sec.
 function endGame() {
 	console.log("Game Over!");
 	gameMapItems.length = 1;
@@ -315,8 +315,9 @@ function endGame() {
 }
 
 
+// Perepares and starts next round. 
 function startNextRound() {
-	charactersToGenerate = START_CHARACTERS + CHARACTER_MULTIPLIER * score;
+	let charactersToGenerate = START_CHARACTERS + CHARACTER_MULTIPLIER * score;
 	isWantedCharacterFound = false;
 	timePenaltyTextArray = [];
 	gameMapItems = [];
@@ -326,6 +327,11 @@ function startNextRound() {
 		"#ed553b",
 		"#f6d55c"
 	];
+
+	// Limits ammount of characters.
+	if (charactersToGenerate > 400) {
+		charactersToGenerate = 400;
+	}
 
 	// Chosess the unique color the wanted char will have, and excluted it for all other chars.
 	let randomColorArrayIndex = Math.floor(Math.random() * colorArray.length);
@@ -339,12 +345,12 @@ function startNextRound() {
 	wantedCharacter = gameMapItems[0];
 	wantedCharacter.color = chosenColor;
 
-	timer.draw();
-	scoreText.draw();
+	// Starts countdown.
 	setTimeout(countdown, 1000)
 }
 
 
+// Generates characters based on stats.
 function generateCharacters(ammount, colors, movePattern) {
 	let dx = 0;
 	let dy = 0;
@@ -357,6 +363,7 @@ function generateCharacters(ammount, colors, movePattern) {
 		dy = Math.random() < 0.5 ? -0.5 : 0.5;
 	}
 
+	// Generates ammount of characters.
 	for (let i = 0; i < ammount; i++) {
 		if (movePattern == "Random") {
 			dx = Math.random() < 0.5 ? -0.5 : 0.5;
@@ -379,15 +386,17 @@ function generateCharacters(ammount, colors, movePattern) {
 }
 
 
+// Initializes new game.
 function gameInit() {
-	// Hides menu
+	// Hides menu.
 	document.getElementById('menu').style.display = "none";
-	document.getElementById('side-panel').style.borderRight = `2px solid black`;
+	document.getElementById('side-panel').style.borderRight = `${BORDER_WIDTH}px solid black`;
 
+	// Sets initial 
 	score = 0;
-	timeLeft = START_TIME;
+	timeLeft = START_TIME_SEC;
 	timer = new Text(0, 100, `${timeLeft}s`, 60, "red", spc);
-	timeBonusText = new Text(0, 0, `+${TIME_BONUS} seconds`, 30, "green", gmc);
+	timeBonusText = new Text(0, 0, `+${TIME_BONUS_SEC} seconds`, 30, "green", gmc);
 	scoreText = new Text(0, sidePanelCanvas.height - 50, `${score}`, 50, "white", spc);
 	timer.shouldDisplay = true;
 	scoreText.shouldDisplay = true;
@@ -423,6 +432,7 @@ function animationFrame() {
 }
 
 
+// Opens different menu windows.
 function openMenu(menuType) {
 	// Prepares a new menu window.
 	document.getElementById('menu').style.display = "flex";
@@ -450,4 +460,6 @@ function openMenu(menuType) {
 	}
 }
 
+
+// Shows starts menu at start.
 openMenu("main");
