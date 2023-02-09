@@ -16,8 +16,9 @@ const HEIGHT = WIDTH;
 const START_CHARACTERS = 50;
 const CHARACTER_MULTIPLIER = 10;
 const START_TIME = 5;
-const TIME_BONUS = 2;
+const TIME_BONUS = 3;
 const TIME_PENALTY = 1;
+const NEXT_ROUND_START_DELAY = 2000;
 const BORDER_WIDTH = +getComputedStyle(document.getElementById('side-panel')).borderRightWidth.slice(0, -2);
 const SIDEPANEL_OFFSET = BORDER_WIDTH + sidePanelCanvas.width;
 const MOVE_PATTERNS = [
@@ -197,7 +198,7 @@ function clickDetection(mouseX, mouseY) {
 
 // Wins the round and starts the next one after 3000 ticks.
 function foundWantedCharacter() {
-	console.log("Found! + 2 sec");
+	console.log(`Found! + ${TIME_BONUS} sec`);
 
 	isWantedCharacterFound = true;
 	gameMapItems.length = 1;
@@ -240,10 +241,10 @@ function foundWantedCharacter() {
 	// Cleans up.
 	setTimeout(() => {
 		timeBonusText.shouldDisplay = false;
-	}, 3000);
+	}, NEXT_ROUND_START_DELAY);
 
 	clearTimeout(countdown);
-	setTimeout(startNextRound, 3000);
+	setTimeout(startNextRound, NEXT_ROUND_START_DELAY);
 }
 
 
@@ -381,6 +382,7 @@ function generateCharacters(ammount, colors, movePattern) {
 function gameInit() {
 	// Hides menu
 	document.getElementById('menu').style.display = "none";
+	document.getElementById('side-panel').style.borderRight = `2px solid black`;
 
 	score = 0;
 	timeLeft = START_TIME;
