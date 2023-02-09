@@ -18,7 +18,6 @@
 			<!-- Main menu -->
 			<div class="sub-menu" id="main-menu">
 				<div id="button-container">
-					<a class="button" onclick="openMenu('options')">Options</a>
 					<a class="button" onclick="gameInit()">Start</a>
 					<a class="button" onclick="openMenu('instructions')">Instructions</a>
 				</div>
@@ -26,18 +25,8 @@
 
 			<!-- Game over menu -->
 			<div class="sub-menu" id="game-over-menu">
-				<h2 class="message">Game Over</h2>
-
-				<div id="button-container">
-					<a class="button" onclick="openMenu('main')">Main menu</a>
-					<a class="button" onclick="">Save score</a>
-				</div>
-			</div>
-
-			<!-- Options menu -->
-			<div class="sub-menu" id="options-menu">
-				<h2 class="message">Options</h2>
-
+				<h2 class="subtitle">Game Over</h2>
+				<h3 id="score-display">Your score was: Loading...</h3>
 				<div id="button-container">
 					<a class="button" onclick="openMenu('main')">Main menu</a>
 				</div>
@@ -45,7 +34,7 @@
 
 			<!-- Instructions menu -->
 			<div class="sub-menu" id="instructions-menu">
-				<h2 class="message" id="instructions-message">Instructions</h2>
+				<h2 class="subtitle" id="instructions-message">Instructions</h2>
 				<ul id="instructions">
 					<li>Your goal is to find as many Wanted Characters as possible before the time runs out.</li>
 					<li>You can see your time left on the left side of your screen.</li>

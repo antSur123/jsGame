@@ -3,6 +3,76 @@ body {
     font-family: Arial, sans-serif;
 }
 
+canvas {
+    background-color: #071e22;
+}
+
+li {
+    margin: 10px 0;
+}
+
+.button {
+	box-shadow: 0px 10px 14px -7px #276873;
+	background: linear-gradient(to bottom, #599bb3 5%, #408c99 100%);
+	background-color: #599bb3;
+	border-radius: 8px;
+	display: inline-block;
+	cursor: pointer;
+	color: #ffffff;
+	font-size: 20px;
+	font-weight: bold;
+	padding: 13px 32px;
+	text-decoration: none;
+	text-shadow: 0px 1px 0px #3d768a;
+    margin: 0 20px;
+}
+
+.button:active {
+	position:relative;
+	top:1px;
+}
+
+.button:hover {
+	background:linear-gradient(to bottom, #408c99 5%, #599bb3 100%);
+	background-color:#408c99;
+}
+
+.sub-menu {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+}
+
+.subtitle {
+    margin: 0px;
+    font-size: 45px;
+}
+
+#button-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+#game {
+    display: flex;
+    align-items: flex-start;
+    overflow: hidden;
+}
+
+#instructions {
+    font-size: 20px;
+}
+
+#side-panel {
+    border-right: 2px solid black;
+}
+
+#score-display {  
+    font-size: 30px; 
+}
+
 #menu-container {
     position: absolute;
     width: 100%;
@@ -28,70 +98,4 @@ body {
     margin-top: 0;
     margin-bottom: 0;
     font-size: 80px;
-}
-
-.sub-menu {
-    display: none;
-    flex-direction: column;
-    align-items: center;
-}
-
-.message {
-    margin-top: 0px;
-    font-size: 45px;
-}
-
-li {
-    margin: 10px 0;
-}
-  
-ul #instructions {
-    font-size: 20px;
-}
-
-#button-container {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    margin-bottom: 20px;
-}
-
-.button {
-	box-shadow: 0px 10px 14px -7px #276873;
-	background: linear-gradient(to bottom, #599bb3 5%, #408c99 100%);
-	background-color: #599bb3;
-	border-radius: 8px;
-	display: inline-block;
-	cursor: pointer;
-	color: #ffffff;
-	font-size: 20px;
-	font-weight: bold;
-	padding: 13px 32px;
-	text-decoration: none;
-	text-shadow: 0px 1px 0px #3d768a;
-    margin: 0 20px;
-}
-
-.button:hover {
-	background:linear-gradient(to bottom, #408c99 5%, #599bb3 100%);
-	background-color:#408c99;
-}
-
-.button:active {
-	position:relative;
-	top:1px;
-}
-
-#game {
-    display: flex;
-    align-items: flex-start;
-    overflow: hidden;
-}
-
-canvas {
-    background-color: #071e22;
-}
-
-#side-panel {
-    border-right: 2px solid black;
 }

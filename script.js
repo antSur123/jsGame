@@ -16,17 +16,18 @@ var spc = sidePanelCanvas.getContext('2d');
 const RADIUS = 35;
 const WIDTH = 65;
 const HEIGHT = WIDTH;
-const BORDER_WIDTH = +getComputedStyle(document.getElementById('side-panel')).borderRightWidth.slice(0, -2);
-const SIDEPANEL_OFFSET = BORDER_WIDTH + sidePanelCanvas.width;
+const START_CHARACTERS = 50;
+const CHARACTER_MULTIPLIER = 10;
 const START_TIME = 5;
 const TIME_BONUS = 2;
 const TIME_PENALTY = 1;
+const BORDER_WIDTH = +getComputedStyle(document.getElementById('side-panel')).borderRightWidth.slice(0, -2);
+const SIDEPANEL_OFFSET = BORDER_WIDTH + sidePanelCanvas.width;
 const MOVE_PATTERNS = [
 	"Horizontal",
 	"None",
 	"Random",
-	"Vertical",
-	"Zigzag"
+	"Vertical"
 ];
 
 let wantedCharacter;
@@ -184,9 +185,6 @@ function clickDetection(mouseX, mouseY) {
 		let charX = wantedCharacter.x + SIDEPANEL_OFFSET;
 		let charY = wantedCharacter.y;
 
-		// console.log("char", charX, charY);
-		// console.log("mouse", mouseX, mouseY);
-
 		if (wantedCharacter.type == "Square") {
 			let isWithinX = mouseX > charX - 1 && mouseX < charX + WIDTH + 1;
 			let isWithinY = mouseY > charY - 1 && mouseY < charY + HEIGHT + 1;
@@ -202,8 +200,7 @@ function clickDetection(mouseX, mouseY) {
 
 // Wins the round and starts the next one after 3000 ticks.
 function foundWantedCharacter() {
-	console.log("Found!");
-	console.log("+2 sec");
+	console.log("Found! + 2 sec");
 
 	isWantedCharacterFound = true;
 	gameMapItems.length = 1;
@@ -255,12 +252,12 @@ function foundWantedCharacter() {
 
 // Punishes the player for clicking on the wrong char.
 function foundWrongCharacter(mouseX, mouseY) {
-	console.log("Miss!");
-	console.log("-1 sec");
+	console.log("Miss! -1 sec");
 
 	let timePenaltyText = new Text(0, 0, `-${TIME_PENALTY} seconds`, 30, "red", gmc);
 	timePenaltyTextArray.push(timePenaltyText);
 
+	// Updates time.
 	if (timeLeft > 0) {
 		timeLeft -= TIME_PENALTY;
 	}
@@ -294,7 +291,6 @@ function foundWrongCharacter(mouseX, mouseY) {
 
 // Counts down the timer. If it reaches 0 it ends the game.
 function countdown() {
-	console.log("timeLeft: " + timeLeft);
 	if (!isWantedCharacterFound) {
 		if (timeLeft > 0) {
 			--timeLeft;
@@ -303,9 +299,8 @@ function countdown() {
 
 		if (timeLeft <= 0) {
 			console.log("Time's up!");
-			gameOver();
+			endGame();
 		}
-
 		else if (timeLeft > 0) {
 			setTimeout(countdown, 1000);
 		}
@@ -313,8 +308,7 @@ function countdown() {
 }
 
 
-// Ends game.
-function gameOver() {
+function endGame() {
 	console.log("Game Over!");
 	gameMapItems.length = 1;
 	setTimeout(() => {
@@ -323,11 +317,9 @@ function gameOver() {
 }
 
 
-// Starts new round.
 function startNextRound() {
-	// TODO Make a character multiplyer. char_ammount = base_chars + 10*score
+	charactersToGenerate = START_CHARACTERS + CHARACTER_MULTIPLIER * score;
 	isWantedCharacterFound = false;
-
 	timePenaltyTextArray = [];
 	gameMapItems = [];
 	let colorArray = [
@@ -342,8 +334,8 @@ function startNextRound() {
 	let chosenColor = colorArray.splice(randomColorArrayIndex, 1)[0];
 	let chosenMovePattern = MOVE_PATTERNS[Math.floor(Math.random() * MOVE_PATTERNS.length)];
 
-	console.log(chosenMovePattern);
-	generateCharacters(50, colorArray, chosenMovePattern);
+	console.log(chosenMovePattern, charactersToGenerate);
+	generateCharacters(charactersToGenerate, colorArray, chosenMovePattern);
 
 	// Recolors the wanted character.
 	wantedCharacter = gameMapItems[0];
@@ -355,29 +347,25 @@ function startNextRound() {
 }
 
 
-// Generates ammount of characters.
 function generateCharacters(ammount, colors, movePattern) {
 	let dx = 0;
 	let dy = 0;
 
-	switch (movePattern) {
-		case "Horizontal":
-			dx = Math.random() < 0.5 ? -1 : 1;
-			break;
-		case "Vertical":
-			dy = Math.random() < 0.5 ? -1 : 1;
-			break;
-		case "Zigzag":
-			dx = 0;
-			dy = 0;
-			break;
+	// Changes move pattern.
+	if (movePattern == "Horizontal") {
+		dx = Math.random() < 0.5 ? -0.5 : 0.5;
+	}
+	else if (movePattern == "Vertical") {
+		dy = Math.random() < 0.5 ? -0.5 : 0.5;
 	}
 
 	for (let i = 0; i < ammount; i++) {
 		if (movePattern == "Random") {
-			dx = Math.random() < 0.5 ? -1 : 1;
-			dy = Math.random() < 0.5 ? -1 : 1;
+			dx = Math.random() < 0.5 ? -0.5 : 0.5;
+			dy = Math.random() < 0.5 ? -0.5 : 0.5;
 		}
+
+		// Generates stats for new character.
 		let x = Math.floor(Math.random() * (gameMapCanvas.width - 2 * WIDTH) + (WIDTH / 1.5));
 		let y = Math.floor(Math.random() * (gameMapCanvas.height - 2 * HEIGHT) + (HEIGHT / 1.5));
 		let color = colors[Math.floor(Math.random() * colors.length)];
@@ -390,6 +378,26 @@ function generateCharacters(ammount, colors, movePattern) {
 			gameMapItems.push(new Square(x, y, dx, dy, gmc, color));
 		}
 	}
+}
+
+
+function gameInit() {
+	// Hides menu
+	document.getElementById('menu').style.display = "none";
+
+	score = 0;
+	timeLeft = START_TIME;
+	timer = new Text(0, 100, `${timeLeft}s`, 60, "red", spc);
+	timeBonusText = new Text(0, 0, `+${TIME_BONUS} seconds`, 30, "green", gmc);
+	scoreText = new Text(0, sidePanelCanvas.height - 50, `${score}`, 50, "white", spc);
+	timer.shouldDisplay = true;
+	scoreText.shouldDisplay = true;
+
+	// Updates the width of the texts.
+	timeBonusText.draw();
+
+	startNextRound();
+	animationFrame();
 }
 
 
@@ -416,35 +424,15 @@ function animationFrame() {
 }
 
 
-function gameInit() {
-	// Hides menu
-	document.getElementById('menu').style.display = "none";
-
-	timeLeft = START_TIME;  // START_TIME
-	score = 0;
-	timer = new Text(0, 100, `${timeLeft}s`, 60, "red", spc);
-	timeBonusText = new Text(0, 0, `+${TIME_BONUS} seconds`, 30, "green", gmc);
-	scoreText = new Text(0, sidePanelCanvas.height - 50, `${score}`, 50, "white", spc);
-	timer.shouldDisplay = true;
-	scoreText.shouldDisplay = true;
-
-	// Updates the width of the texts.
-	timeBonusText.draw();
-
-
-	startNextRound();
-	animationFrame();
-}
-
-
 function openMenu(menuType) {
+	// Prepares a new menu window.
 	document.getElementById('menu').style.display = "flex";
 	document.getElementById('main-menu').style.display = "none";
 	document.getElementById('game-over-menu').style.display = "none";
-	document.getElementById('options-menu').style.display = "none";
 	document.getElementById('instructions-menu').style.display = "none";
 	document.getElementById('title').style.marginBottom = "0px";
 
+	// Displays the right menu window.
 	switch (menuType) {
 		case "main":
 			document.getElementById('main-menu').style.display = "flex";
@@ -452,11 +440,8 @@ function openMenu(menuType) {
 			break;
 
 		case "gameOver":
+			document.getElementById('score-display').innerHTML = `Your score was: ${score}`
 			document.getElementById('game-over-menu').style.display = "flex";
-			break;
-
-		case "options":
-			document.getElementById('options-menu').style.display = "flex";
 			break;
 
 		case "instructions":
