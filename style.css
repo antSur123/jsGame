@@ -37,6 +37,13 @@ li {
 	background-color:#408c99;
 }
 
+.button-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
 .sub-menu {
     display: none;
     flex-direction: column;
@@ -46,13 +53,6 @@ li {
 .subtitle {
     margin: 0px;
     font-size: 45px;
-}
-
-#button-container {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    margin-bottom: 20px;
 }
 
 #game {

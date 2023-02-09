@@ -1,6 +1,3 @@
-// Plannering https://docs.google.com/document/d/15m22qdkUSni4wRro1tTjpulOBNoxaa2P1uKWIwTHs8A/edit
-// Dokumentation https://docs.google.com/document/d/1Wij25DYcz6bglkBAEUzfXRDs5U3jSjaIIoH0hM12gHU/edit
-
 // Sets up canvases and relvant tools.
 var gameMapCanvas = document.getElementById("game-map");
 gameMapCanvas.width = window.innerWidth * 0.9;
