@@ -1,13 +1,13 @@
 // Sets up canvases and relvant tools.
-var gameMapCanvas = document.getElementById("game-map");
-gameMapCanvas.width = window.innerWidth * 0.9;
-gameMapCanvas.height = window.innerHeight;
-var gmc = gameMapCanvas.getContext('2d');
-
 var sidePanelCanvas = document.getElementById("side-panel");
-sidePanelCanvas.width = window.innerWidth * 0.1;
+sidePanelCanvas.width = 120;
 sidePanelCanvas.height = window.innerHeight;
 var spc = sidePanelCanvas.getContext('2d');
+
+var gameMapCanvas = document.getElementById("game-map");
+gameMapCanvas.width = window.innerWidth - sidePanelCanvas.width;
+gameMapCanvas.height = window.innerHeight;
+var gmc = gameMapCanvas.getContext('2d');
 
 // Sets up global variables.
 const RADIUS = 35;
@@ -15,6 +15,7 @@ const WIDTH = 65;
 const HEIGHT = WIDTH;
 const START_CHARACTERS = 50;
 const CHARACTER_MULTIPLIER = 10;
+const MAX_CHARACTERS = 400;
 const START_TIME_SEC = 5;
 const TIME_BONUS_SEC = 3;
 const TIME_PENALTY_SEC = 1;
@@ -33,6 +34,7 @@ let timeLeft;
 let timer;
 let timeBonusText;
 let score;
+let highScore = 0;
 let gameMapItems = [];
 let timePenaltyTextArray = [];
 let isWantedCharacterFound = false;
@@ -305,13 +307,27 @@ function countdown() {
 	}
 }
 
-// Ends game and opens menu after 3 sec.
+
+// Ends game, updates highscore, and opens menu after 3 sec.
 function endGame() {
 	console.log("Game Over!");
 	gameMapItems.length = 1;
+	if (score > highScore) {
+		updateHighScore(score);
+	}
+	
 	setTimeout(() => {
 		openMenu("gameOver");
 	}, 3000);
+}
+
+
+// Updates highscore
+function updateHighScore(score) {
+	console.log("New high score!", highScore);
+	highScore = score;
+	localStorage.setItem("highScore", highScore);
+	highScore = localStorage.getItem("highScore");
 }
 
 
@@ -329,8 +345,8 @@ function startNextRound() {
 	];
 
 	// Limits ammount of characters.
-	if (charactersToGenerate > 400) {
-		charactersToGenerate = 400;
+	if (charactersToGenerate > MAX_CHARACTERS) {
+		charactersToGenerate = MAX_CHARACTERS;
 	}
 
 	// Chosess the unique color the wanted char will have, and excluted it for all other chars.
@@ -445,11 +461,11 @@ function openMenu(menuType) {
 	switch (menuType) {
 		case "main":
 			document.getElementById('main-menu').style.display = "flex";
-			document.getElementById('title').style.marginBottom = "50px";
+			document.getElementById('high-score').innerHTML = `High score: ${highScore}`
 			break;
 
 		case "gameOver":
-			document.getElementById('score-display').innerHTML = `Your score was: ${score}`
+			document.getElementById('score').innerHTML = `Score: ${score}`
 			document.getElementById('game-over-menu').style.display = "flex";
 			break;
 
