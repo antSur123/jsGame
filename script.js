@@ -326,8 +326,9 @@ function endGame() {
 function updateHighScore(score) {
 	console.log("New high score!", highScore);
 	highScore = score;
+	
+	localStorage.clear();
 	localStorage.setItem("highScore", highScore);
-	highScore = localStorage.getItem("highScore");
 }
 
 
@@ -460,6 +461,7 @@ function openMenu(menuType) {
 	// Displays the right menu window.
 	switch (menuType) {
 		case "main":
+			highScore = localStorage.getItem("highScore");
 			document.getElementById('main-menu').style.display = "flex";
 			document.getElementById('high-score').innerHTML = `High score: ${highScore}`
 			break;
