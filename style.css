@@ -3,18 +3,19 @@ body {
     font-family: Arial, sans-serif;
 }
 
-canvas {
-    background-color: #071e22;
-}
-
 #game {
     display: flex;
     align-items: flex-start;
     overflow: hidden;
 }
 
+#game-map {
+    box-shadow: none;
+    background-color: #073239;
+}
+
 #side-panel {
-    border-right: 0px solid black;
+    background-color: #073239;
 }
 
 #menu-container {

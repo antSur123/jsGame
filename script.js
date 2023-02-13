@@ -1,6 +1,6 @@
 // Sets up canvases and relvant tools.
 var sidePanelCanvas = document.getElementById("side-panel");
-sidePanelCanvas.width = 120;
+sidePanelCanvas.width = 130;
 sidePanelCanvas.height = window.innerHeight;
 var spc = sidePanelCanvas.getContext('2d');
 
@@ -20,8 +20,7 @@ const START_TIME_SEC = 5;
 const TIME_BONUS_SEC = 3;
 const TIME_PENALTY_SEC = 1;
 const NEXT_ROUND_START_DELAY_MS = 2000;
-const BORDER_WIDTH = 2;
-const SIDEPANEL_OFFSET = BORDER_WIDTH + sidePanelCanvas.width;
+const SIDEPANEL_OFFSET = sidePanelCanvas.width;
 const MOVE_PATTERNS = [
 	"Horizontal",
 	"None",
@@ -407,7 +406,8 @@ function generateCharacters(ammount, colors, movePattern) {
 function gameInit() {
 	// Hides menu.
 	document.getElementById('menu').style.display = "none";
-	document.getElementById('side-panel').style.borderRight = `${BORDER_WIDTH}px solid black`;
+	document.getElementById('game-map').style.boxShadow = "4px 4px 10px 0px rgba(0,0,0,0.75) inset";
+	
 
 	// Sets initial 
 	score = 0;
