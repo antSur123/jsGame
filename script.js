@@ -10,15 +10,16 @@ gameMapCanvas.height = window.innerHeight;
 var gmc = gameMapCanvas.getContext('2d');
 
 // Sets up global variables.
-const RADIUS = 35;
-const WIDTH = 65;
-const HEIGHT = WIDTH;
+const CIRCLE_RADIUS = 35;
+const SQUARE_WIDTH = 65;
+const SQUARE_HEIGHT = SQUARE_WIDTH;
 const START_CHARACTERS = 50;
 const CHARACTER_MULTIPLIER = 10;
 const MAX_CHARACTERS = 400;
 const START_TIME_SEC = 5;
 const TIME_BONUS_SEC = 3;
 const TIME_PENALTY_SEC = 1;
+const MAX_TIME_SEC = 50;
 const NEXT_ROUND_START_DELAY_MS = 2000;
 const SIDEPANEL_OFFSET = sidePanelCanvas.width;
 const MOVE_PATTERNS = [
@@ -53,10 +54,10 @@ class Circle {
 
 		// Updates character's animation.
 		this.update = () => {
-			if (this.x + RADIUS > gameMapCanvas.width || this.x - RADIUS < 0) {
+			if (this.x + CIRCLE_RADIUS > gameMapCanvas.width || this.x - CIRCLE_RADIUS < 0) {
 				this.dx *= -1;
 			}
-			if (this.y + RADIUS > gameMapCanvas.height || this.y - RADIUS < 0) {
+			if (this.y + CIRCLE_RADIUS > gameMapCanvas.height || this.y - CIRCLE_RADIUS < 0) {
 				this.dy *= -1;
 			}
 
@@ -69,14 +70,14 @@ class Circle {
 		this.draw = (canvas) => {
 			if (canvas != gmc) {
 				canvas.beginPath();
-				canvas.arc(sidePanelCanvas.width / 2, sidePanelCanvas.height / 2, RADIUS, 0, Math.PI * 2, false);
+				canvas.arc(sidePanelCanvas.width / 2, sidePanelCanvas.height / 2, CIRCLE_RADIUS, 0, Math.PI * 2, false);
 				canvas.fillStyle = this.color;
 				canvas.fill();
 				canvas.stroke();
 			}
 			else {
 				canvas.beginPath();
-				canvas.arc(this.x, this.y, RADIUS, 0, Math.PI * 2, false);
+				canvas.arc(this.x, this.y, CIRCLE_RADIUS, 0, Math.PI * 2, false);
 				canvas.fillStyle = this.color;
 				canvas.fill();
 				canvas.stroke();
@@ -101,10 +102,10 @@ class Square {
 
 		// Updates character's animation.
 		this.update = () => {
-			if (this.x + WIDTH > gameMapCanvas.width || this.x < 0) {
+			if (this.x + SQUARE_WIDTH > gameMapCanvas.width || this.x < 0) {
 				this.dx *= -1;
 			}
-			if (this.y + WIDTH > gameMapCanvas.height || this.y < 0) {
+			if (this.y + SQUARE_WIDTH > gameMapCanvas.height || this.y < 0) {
 				this.dy *= -1;
 			}
 
@@ -118,15 +119,15 @@ class Square {
 		this.draw = (canvas) => {
 			if (canvas != gmc) {
 				canvas.fillStyle = this.color;
-				let x = (sidePanelCanvas.width - WIDTH) / 2;
-				let y = (sidePanelCanvas.height - HEIGHT) / 2;
-				canvas.fillRect(x, y, WIDTH, HEIGHT);
-				canvas.strokeRect(x, y, WIDTH, HEIGHT);
+				let x = (sidePanelCanvas.width - SQUARE_WIDTH) / 2;
+				let y = (sidePanelCanvas.height - SQUARE_HEIGHT) / 2;
+				canvas.fillRect(x, y, SQUARE_WIDTH, SQUARE_HEIGHT);
+				canvas.strokeRect(x, y, SQUARE_WIDTH, SQUARE_HEIGHT);
 			}
 			else {
 				canvas.fillStyle = this.color;
-				canvas.fillRect(this.x, this.y, WIDTH, HEIGHT);
-				canvas.strokeRect(this.x, this.y, WIDTH, HEIGHT);
+				canvas.fillRect(this.x, this.y, SQUARE_WIDTH, SQUARE_HEIGHT);
+				canvas.strokeRect(this.x, this.y, SQUARE_WIDTH, SQUARE_HEIGHT);
 			}
 		};
 	}
@@ -185,13 +186,13 @@ function clickDetection(mouseX, mouseY) {
 		let charY = wantedCharacter.y;
 
 		if (wantedCharacter.type == "Square") {
-			let isWithinX = mouseX > charX - 1 && mouseX < charX + WIDTH + 1;
-			let isWithinY = mouseY > charY - 1 && mouseY < charY + HEIGHT + 1;
+			let isWithinX = mouseX > charX - 1 && mouseX < charX + SQUARE_WIDTH + 1;
+			let isWithinY = mouseY > charY - 1 && mouseY < charY + SQUARE_HEIGHT + 1;
 			isWithinX && isWithinY ? foundWantedCharacter() : foundWrongCharacter(mouseX, mouseY);
 		}
 		else if (wantedCharacter.type == "Circle") {
 			let clickDistance = Math.sqrt(Math.abs(Math.pow(mouseX - charX, 2) - Math.pow(mouseY - charY, 2)));
-			clickDistance <= RADIUS ? foundWantedCharacter() : foundWrongCharacter(mouseX, mouseY);
+			clickDistance <= CIRCLE_RADIUS ? foundWantedCharacter() : foundWrongCharacter(mouseX, mouseY);
 		}
 	}
 }
@@ -211,7 +212,7 @@ function foundWantedCharacter() {
 
 	// Adds 2 second, only up to fifty.
 	for (let i = 0; i < TIME_BONUS_SEC; i++) {
-		if (timeLeft <= 49) {
+		if (timeLeft < MAX_TIME_SEC) {
 			++timeLeft;
 		}
 	}
@@ -224,7 +225,7 @@ function foundWantedCharacter() {
 	}
 	else if (wantedCharacter.type == "Circle") {
 		timeBonusText.x = wantedCharacter.x - timeBonusText.width / 2;
-		timeBonusText.y = wantedCharacter.y - RADIUS - 20;
+		timeBonusText.y = wantedCharacter.y - CIRCLE_RADIUS - 20;
 	}
 	timeBonusText.shouldDisplay = true;
 
@@ -239,11 +240,7 @@ function foundWantedCharacter() {
 		timeBonusText.x = gameMapCanvas.width - timeBonusText.width - 10;
 	}
 
-	// Cleans up.
-	setTimeout(() => {
-		timeBonusText.shouldDisplay = false;
-	}, NEXT_ROUND_START_DELAY_MS);
-
+	// Redies for the next round by pausing timer, and scheduling the next round.
 	clearTimeout(countdown);
 	setTimeout(startNextRound, NEXT_ROUND_START_DELAY_MS);
 }
@@ -314,7 +311,7 @@ function endGame() {
 	if (score > highScore) {
 		updateHighScore(score);
 	}
-	
+
 	setTimeout(() => {
 		openMenu("gameOver");
 	}, 3000);
@@ -333,6 +330,7 @@ function updateHighScore(score) {
 
 // Perepares and starts next round. 
 function startNextRound() {
+	timeBonusText.shouldDisplay = false;
 	let charactersToGenerate = START_CHARACTERS + CHARACTER_MULTIPLIER * score;
 	isWantedCharacterFound = false;
 	timePenaltyTextArray = [];
@@ -387,8 +385,8 @@ function generateCharacters(ammount, colors, movePattern) {
 		}
 
 		// Generates stats for new character.
-		let x = Math.floor(Math.random() * (gameMapCanvas.width - 2 * WIDTH) + (WIDTH / 1.5));
-		let y = Math.floor(Math.random() * (gameMapCanvas.height - 2 * HEIGHT) + (HEIGHT / 1.5));
+		let x = Math.floor(Math.random() * (gameMapCanvas.width - 2 * SQUARE_WIDTH) + (SQUARE_WIDTH / 1.5));
+		let y = Math.floor(Math.random() * (gameMapCanvas.height - 2 * SQUARE_HEIGHT) + (SQUARE_HEIGHT / 1.5));
 		let color = colors[Math.floor(Math.random() * colors.length)];
 		let randomShape = Math.floor(Math.random() * 2);
 
@@ -407,7 +405,6 @@ function gameInit() {
 	// Hides menu.
 	document.getElementById('menu').style.display = "none";
 	document.getElementById('game-map').style.boxShadow = "4px 4px 10px 0px rgba(0,0,0,0.75) inset";
-	
 
 	// Sets initial 
 	score = 0;
