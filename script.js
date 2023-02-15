@@ -242,16 +242,17 @@ function foundWantedCharacter() {
 
 	// Redies for the next round by pausing timer, and scheduling the next round.
 	clearTimeout(countdown);
-	setTimeout(startNextRound, NEXT_ROUND_START_DELAY_MS);
+
+	setTimeout(() => {
+		timeBonusText.shouldDisplay = false;
+		startNextRound();
+	}, NEXT_ROUND_START_DELAY_MS);
 }
 
 
 // Punishes the player for clicking on the wrong char.
 function foundWrongCharacter(mouseX, mouseY) {
-	console.log("Miss! -1 sec");
-
-	let timePenaltyText = new Text(0, 0, `-${TIME_PENALTY_SEC} seconds`, 30, "red", gmc);
-	timePenaltyTextArray.push(timePenaltyText);
+	console.log(`Miss! -${TIME_PENALTY_SEC} sec`);
 
 	// Updates time.
 	if (timeLeft > 0) {
@@ -260,6 +261,9 @@ function foundWrongCharacter(mouseX, mouseY) {
 
 	timer.text = `${timeLeft}s`;
 
+	// Creates new penalty text
+	let timePenaltyText = new Text(0, 0, `-${TIME_PENALTY_SEC} seconds`, 30, "red", gmc);
+	timePenaltyTextArray.push(timePenaltyText);
 
 	// Displays recieved time bonus.
 	timePenaltyText.x = mouseX - SIDEPANEL_OFFSET - timeBonusText.width / 2;
@@ -323,15 +327,13 @@ function updateHighScore(score) {
 	console.log("New high score!", highScore);
 	highScore = score;
 
-	localStorage.clear();
+	localStorage.removeItem("highScore");
 	localStorage.setItem("highScore", highScore);
 }
 
 
 // Perepares and starts next round. 
 function startNextRound() {
-	timeBonusText.shouldDisplay = false;
-	let charactersToGenerate = START_CHARACTERS + CHARACTER_MULTIPLIER * score;
 	isWantedCharacterFound = false;
 	timePenaltyTextArray = [];
 	gameMapItems = [];
@@ -342,7 +344,8 @@ function startNextRound() {
 		"#f6d55c"
 	];
 
-	// Limits ammount of characters.
+	// Counts and limits characters there it will be too many.
+	let charactersToGenerate = START_CHARACTERS + CHARACTER_MULTIPLIER * score;
 	if (charactersToGenerate > MAX_CHARACTERS) {
 		charactersToGenerate = MAX_CHARACTERS;
 	}
@@ -417,7 +420,6 @@ function gameInit() {
 
 	// Updates the width of the texts.
 	timeBonusText.draw();
-
 	startNextRound();
 	animationFrame();
 }
